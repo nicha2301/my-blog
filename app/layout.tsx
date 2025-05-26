@@ -93,7 +93,7 @@ export default function RootLayout({
           <main className="min-h-screen pt-28">
             <AppWrapper>
               <PageTransition>
-                {children}
+        {children}
               </PageTransition>
             </AppWrapper>
           </main>
@@ -184,7 +184,7 @@ function Footer() {
   return (
     <footer className="py-16 border-t border-neutral-200 dark:border-neutral-800">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-1">
             <TransitionLink href="/" className="text-xl font-medium mb-4 inline-block">
               Minimal Journal
@@ -200,6 +200,15 @@ function Footer() {
               <li><TransitionLink href="/about" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">About</TransitionLink></li>
               <li><TransitionLink href="/blog" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Journal</TransitionLink></li>
               <li><TransitionLink href="/contact" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Contact</TransitionLink></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4">Discover</h3>
+            <ul className="space-y-3">
+              <li><TransitionLink href="/categories" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Categories</TransitionLink></li>
+              <li><TransitionLink href="/authors" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Authors</TransitionLink></li>
+              <li><TransitionLink href="/archive" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Archive</TransitionLink></li>
+              <li><TransitionLink href="/search" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Search</TransitionLink></li>
             </ul>
           </div>
           <div>
@@ -224,7 +233,11 @@ function Footer() {
           </div>
         </div>
         <div className="border-t border-neutral-200 dark:border-neutral-800 mt-12 pt-6 text-center text-neutral-500 dark:text-neutral-500 text-sm">
-          <p>© {new Date().getFullYear()} Minimal Journal. All rights reserved.</p>
+          <p className="mb-2">© {new Date().getFullYear()} Minimal Journal. All rights reserved.</p>
+          <div className="flex justify-center gap-4">
+            <TransitionLink href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</TransitionLink>
+            <TransitionLink href="/terms-of-service" className="hover:text-foreground transition-colors">Terms of Service</TransitionLink>
+          </div>
         </div>
       </div>
     </footer>

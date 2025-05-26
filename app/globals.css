@@ -163,7 +163,7 @@ p {
   transform: translateY(20px);
   opacity: 0;
   animation: slideUp var(--transition-medium) var(--ease-out-expo) forwards;
-}
+  }
 
 @keyframes slideUp {
   from {
