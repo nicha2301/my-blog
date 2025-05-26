@@ -5,6 +5,8 @@ import Lenis from '@studio-freight/lenis';
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import "./globals.css";
+import { ThemeProvider } from "./providers/theme-provider";
+import ThemeSwitcher from "./components/theme-switcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,17 +49,19 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <title>Minimal Journal</title>
         <meta name="description" content="A minimalist blog featuring clean design and thoughtful content" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Header />
-        <main className="min-h-screen pt-28">
-          {children}
-        </main>
-        <Footer />
+        <ThemeProvider>
+          <Header />
+          <main className="min-h-screen pt-28">
+            {children}
+          </main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
@@ -104,14 +108,17 @@ function Header() {
             <Link href="/blog" className="hover:text-secondary transition-colors">Journal</Link>
             <Link href="/contact" className="hover:text-secondary transition-colors">Contact</Link>
           </nav>
-          <button 
-            onClick={toggleMobileMenu} 
-            className="md:hidden flex flex-col gap-1.5 p-2"
-          >
-            <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-            <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
-            <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeSwitcher />
+            <button 
+              onClick={toggleMobileMenu} 
+              className="md:hidden flex flex-col gap-1.5 p-2"
+            >
+              <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+              <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+              <span className={`block w-6 h-px bg-foreground transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -122,6 +129,9 @@ function Header() {
           <Link href="/about" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>About</Link>
           <Link href="/blog" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Journal</Link>
           <Link href="/contact" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+            <ThemeSwitcher />
+          </div>
         </div>
       </div>
     </>
