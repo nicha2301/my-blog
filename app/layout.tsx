@@ -2,11 +2,15 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import Lenis from '@studio-freight/lenis';
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import "./globals.css";
 import { ThemeProvider } from "./providers/theme-provider";
 import ThemeSwitcher from "./components/theme-switcher";
+import PageLoadingIndicator from "./components/page-loading-indicator";
+import TransitionLink from "./components/transition-link";
+import { useResourceLoading } from "./hooks/use-resource-loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +27,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
+  
+  // Use resource loading hook to track page load completion
+  useResourceLoading();
 
   useEffect(() => {
     setMounted(true);
@@ -56,6 +65,7 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
+          <PageLoadingIndicator />
           <Header />
           <main className="min-h-screen pt-28">
             {children}
@@ -70,8 +80,11 @@ export default function RootLayout({
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
+    setMounted(true);
+    
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -99,16 +112,19 @@ function Header() {
         }`}
       >
         <div className="container flex items-center justify-between">
-          <Link href="/" className="text-xl font-medium">
+          <TransitionLink href="/" className="text-xl font-medium">
             Minimal Journal
-          </Link>
-          <nav className="hidden md:flex gap-8">
-            <Link href="/" className="hover:text-secondary transition-colors">Home</Link>
-            <Link href="/about" className="hover:text-secondary transition-colors">About</Link>
-            <Link href="/blog" className="hover:text-secondary transition-colors">Journal</Link>
-            <Link href="/contact" className="hover:text-secondary transition-colors">Contact</Link>
-          </nav>
-          <div className="flex items-center gap-4">
+          </TransitionLink>
+          
+          {/* Fixed width container for navigation to prevent layout shift */}
+          <div className="hidden md:flex gap-8 items-center justify-end min-w-[400px]">
+            <TransitionLink href="/" className="hover:text-secondary transition-colors">Home</TransitionLink>
+            <TransitionLink href="/about" className="hover:text-secondary transition-colors">About</TransitionLink>
+            <TransitionLink href="/blog" className="hover:text-secondary transition-colors">Journal</TransitionLink>
+            <TransitionLink href="/contact" className="hover:text-secondary transition-colors">Contact</TransitionLink>
+          </div>
+          
+          <div className="flex items-center gap-4 flex-shrink-0">
             <ThemeSwitcher />
             <button 
               onClick={toggleMobileMenu} 
@@ -125,10 +141,10 @@ function Header() {
       {/* Mobile menu */}
       <div className={`fixed inset-0 bg-background z-40 transition-transform duration-500 ease-in-out transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} md:hidden pt-24 px-6`}>
         <div className="flex flex-col gap-8 text-xl">
-          <Link href="/" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-          <Link href="/about" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>About</Link>
-          <Link href="/blog" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Journal</Link>
-          <Link href="/contact" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
+          <TransitionLink href="/" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Home</TransitionLink>
+          <TransitionLink href="/about" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>About</TransitionLink>
+          <TransitionLink href="/blog" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Journal</TransitionLink>
+          <TransitionLink href="/contact" className="hover:text-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>Contact</TransitionLink>
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <ThemeSwitcher />
           </div>
@@ -144,9 +160,9 @@ function Footer() {
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div className="md:col-span-1">
-            <Link href="/" className="text-xl font-medium mb-4 inline-block">
+            <TransitionLink href="/" className="text-xl font-medium mb-4 inline-block">
               Minimal Journal
-            </Link>
+            </TransitionLink>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mb-6">
               A minimalist blog featuring clean design and thoughtful content.
             </p>
@@ -154,10 +170,10 @@ function Footer() {
           <div>
             <h3 className="text-lg font-bold mb-4">Navigation</h3>
             <ul className="space-y-3">
-              <li><Link href="/" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Home</Link></li>
-              <li><Link href="/about" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">About</Link></li>
-              <li><Link href="/blog" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Journal</Link></li>
-              <li><Link href="/contact" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Contact</Link></li>
+              <li><TransitionLink href="/" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Home</TransitionLink></li>
+              <li><TransitionLink href="/about" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">About</TransitionLink></li>
+              <li><TransitionLink href="/blog" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Journal</TransitionLink></li>
+              <li><TransitionLink href="/contact" className="text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">Contact</TransitionLink></li>
             </ul>
           </div>
           <div>

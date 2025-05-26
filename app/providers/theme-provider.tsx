@@ -13,6 +13,7 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  systemTheme: "light" | "dark";
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
@@ -26,36 +27,66 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">("light");
+  const [mounted, setMounted] = useState(false);
 
+  // Detect system preference and apply it immediately to avoid flashing
   useEffect(() => {
+    // Get system theme
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setSystemTheme(prefersDark ? "dark" : "light");
+    
+    // Get saved theme if exists
+    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+    
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (prefersDark) {
+      setTheme("system"); // Default to system if dark mode is preferred
+    }
+
+    // Handle changes in system preferences
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? "dark" : "light");
+      if (theme === "system") {
+        document.documentElement.classList.remove("light", "dark");
+        document.documentElement.classList.add(e.matches ? "dark" : "light");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    setMounted(true);
+    
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [storageKey, theme]);
+
+  // Update the class when theme changes
+  useEffect(() => {
+    if (!mounted) return;
+    
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
       root.classList.add(systemTheme);
       return;
     }
 
     root.classList.add(theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, [storageKey]);
-
-  useEffect(() => {
     localStorage.setItem(storageKey, theme);
-  }, [theme, storageKey]);
+  }, [theme, systemTheme, mounted, storageKey]);
+
+  // To avoid flash of wrong theme, we use suppressHydrationWarning on html
+  // and only expose the state once we're mounted
+  const value = {
+    theme,
+    setTheme,
+    systemTheme
+  };
 
   return (
-    <ThemeProviderContext.Provider value={{ theme, setTheme }} {...props}>
+    <ThemeProviderContext.Provider value={value} {...props}>
       {children}
     </ThemeProviderContext.Provider>
   );
