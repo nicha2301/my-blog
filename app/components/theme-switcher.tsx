@@ -6,11 +6,24 @@ import { useTheme } from "@/app/providers/theme-provider";
 export default function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
 
   // After mounting, we have access to the theme
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    if (isChanging || theme === newTheme) return;
+    
+    setIsChanging(true);
+    setTheme(newTheme);
+    
+    // Add a small delay to prevent rapid toggling
+    setTimeout(() => {
+      setIsChanging(false);
+    }, 300);
+  };
 
   return (
     <div className="flex items-center border border-neutral-200 dark:border-neutral-800 rounded-none p-1 w-[108px] h-[40px]">
@@ -24,7 +37,8 @@ export default function ThemeSwitcher() {
       ) : (
         <>
           <button
-            onClick={() => setTheme("light")}
+            onClick={() => handleThemeChange("light")}
+            disabled={isChanging}
             className={`p-1.5 relative ${
               theme === "light" ? "bg-neutral-100 dark:bg-neutral-800" : ""
             }`}
@@ -52,7 +66,8 @@ export default function ThemeSwitcher() {
           </button>
           
           <button
-            onClick={() => setTheme("dark")}
+            onClick={() => handleThemeChange("dark")}
+            disabled={isChanging}
             className={`p-1.5 ${
               theme === "dark" ? "bg-neutral-200 dark:bg-neutral-700" : ""
             }`}
@@ -75,7 +90,8 @@ export default function ThemeSwitcher() {
           </button>
           
           <button
-            onClick={() => setTheme("system")}
+            onClick={() => handleThemeChange("system")}
+            disabled={isChanging}
             className={`p-1.5 ${
               theme === "system" ? "bg-neutral-200 dark:bg-neutral-700" : ""
             }`}

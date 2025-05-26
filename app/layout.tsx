@@ -11,6 +11,7 @@ import ThemeSwitcher from "./components/theme-switcher";
 import PageLoadingIndicator from "./components/page-loading-indicator";
 import TransitionLink from "./components/transition-link";
 import { useResourceLoading } from "./hooks/use-resource-loading";
+import Script from 'next/script';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,30 @@ export default function RootLayout({
       <head>
         <title>Minimal Journal</title>
         <meta name="description" content="A minimalist blog featuring clean design and thoughtful content" />
+        {/* Script to prevent flash of wrong theme */}
+        <Script
+          id="theme-switcher"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const storageKey = 'theme';
+                  const theme = localStorage.getItem(storageKey);
+                  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  
+                  if (theme === 'light' || theme === 'dark') {
+                    document.documentElement.classList.add(theme);
+                    document.documentElement.style.colorScheme = theme;
+                  } else {
+                    document.documentElement.classList.add(systemTheme);
+                    document.documentElement.style.colorScheme = systemTheme;
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>

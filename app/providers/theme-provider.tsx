@@ -26,59 +26,97 @@ export function ThemeProvider({
   storageKey = "theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [systemTheme, setSystemTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
 
-  // Detect system preference and apply it immediately to avoid flashing
+  // Detect system preference and apply it once on mount
   useEffect(() => {
-    // Get system theme
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setSystemTheme(prefersDark ? "dark" : "light");
-    
-    // Get saved theme if exists
-    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (prefersDark) {
-      setTheme("system"); // Default to system if dark mode is preferred
-    }
+    // Only run this effect once on mount
+    if (mounted) return;
 
-    // Handle changes in system preferences
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      setSystemTheme(e.matches ? "dark" : "light");
-      if (theme === "system") {
-        document.documentElement.classList.remove("light", "dark");
-        document.documentElement.classList.add(e.matches ? "dark" : "light");
+    try {
+      // Get system theme
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const detectedSystemTheme = prefersDark ? "dark" : "light";
+      setSystemTheme(detectedSystemTheme);
+      
+      // Get saved theme if exists
+      const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+      
+      if (savedTheme) {
+        setThemeState(savedTheme);
+      } else if (prefersDark) {
+        setThemeState("system"); // Default to system if dark mode is preferred
       }
-    };
 
-    mediaQuery.addEventListener("change", handleChange);
-    setMounted(true);
+      // Mark as mounted
+      setMounted(true);
+    } catch (e) {
+      // Fallback in case of any errors
+      setMounted(true);
+    }
+  }, [mounted, storageKey]);
+
+  // Handle changes in system preferences
+  useEffect(() => {
+    if (!mounted) return;
+
+    try {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      
+      const handleChange = (e: MediaQueryListEvent) => {
+        const newSystemTheme = e.matches ? "dark" : "light";
+        setSystemTheme(newSystemTheme);
+        
+        if (theme === "system") {
+          document.documentElement.classList.remove("light", "dark");
+          document.documentElement.classList.add(newSystemTheme);
+        }
+      };
+
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    } catch (e) {
+      // Fallback in case of any errors
+      console.error("Error setting up theme listener:", e);
+    }
+  }, [mounted, theme]);
+
+  // Custom setter for theme to prevent rapid changes
+  const setTheme = (newTheme: Theme) => {
+    // Prevent multiple theme changes in quick succession
+    if (isChangingTheme) return;
     
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [storageKey, theme]);
+    setIsChangingTheme(true);
+    setThemeState(newTheme);
+    
+    // Release lock after a short delay
+    setTimeout(() => {
+      setIsChangingTheme(false);
+    }, 200);
+  };
 
   // Update the class when theme changes
   useEffect(() => {
     if (!mounted) return;
     
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
+    try {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
 
-    if (theme === "system") {
-      root.classList.add(systemTheme);
-      return;
+      const appliedTheme = theme === "system" ? systemTheme : theme;
+      root.classList.add(appliedTheme);
+      
+      // Store in localStorage
+      localStorage.setItem(storageKey, theme);
+    } catch (e) {
+      console.error("Error applying theme:", e);
     }
-
-    root.classList.add(theme);
-    localStorage.setItem(storageKey, theme);
   }, [theme, systemTheme, mounted, storageKey]);
 
-  // To avoid flash of wrong theme, we use suppressHydrationWarning on html
-  // and only expose the state once we're mounted
+  // Value to expose via context
   const value = {
     theme,
     setTheme,
