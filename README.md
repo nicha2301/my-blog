@@ -1,112 +1,68 @@
-# Minimal Journal - Elegant Next.js Blog
+# Minimal Journal - Luxury Blog
 
-A sophisticated, minimalist blog built with Next.js, inspired by Ramotion's design aesthetics. This project showcases modern web development practices including smooth animations, responsive design, and elegant typography.
-
-![Minimal Journal](https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1770&auto=format&fit=crop)
+A sophisticated blog featuring clean design and thoughtful content, with luxury design elements inspired by Ramotion's aesthetics.
 
 ## Features
 
-- **Modern Design**: Clean, minimalist interface with luxury design elements
-- **Smooth Animations**: Page transitions and scroll-based animations using GSAP and Framer Motion
-- **Responsive Layout**: Fully optimized for all device sizes
-- **Elegant Typography**: Thoughtful typography using Geist font family
-- **Dark/Light Mode**: Seamless theme switching with system preference detection
-- **Smooth Scrolling**: Enhanced scrolling experience using Lenis
-- **Optimized Images**: Fast loading with Next.js Image component
-- **Blog Functionality**: Category filtering and search capabilities
-
-## Pages
-
-- **Home**: Showcases featured articles, categories, and newsletter signup
-- **About**: Company story, team profiles, mission statement, and values
-- **Blog**: Comprehensive blog with filtering by category and search functionality
-- **Contact**: Contact form with validations and company information
-- **404**: Custom error page
-
-## Technologies Used
-
-- **Next.js**: React framework for server-side rendering and static site generation
-- **TypeScript**: Type-safe JavaScript
-- **Tailwind CSS**: Utility-first CSS framework for styling
-- **Framer Motion**: Animation library for React
-- **GSAP**: Professional-grade animation library
-- **Lenis**: Smooth scroll library
-- **Next Themes**: Theme management
-
-## Project Structure
-
-```
-my-blog/
-├── app/
-│   ├── components/      # Reusable UI components
-│   ├── hooks/           # Custom React hooks
-│   ├── providers/       # Context providers
-│   ├── about/           # About page
-│   ├── blog/            # Blog page and articles
-│   ├── contact/         # Contact page
-│   ├── globals.css      # Global styles
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Home page
-├── public/              # Static assets
-└── next.config.js       # Next.js configuration
-```
+- Modern, luxury design with deep purples and warm taupes
+- Smooth page transitions and animations
+- Responsive layout for all devices
+- Dark/light theme support
+- Glass effect UI components
+- Full Next.js App Router support
 
 ## Getting Started
 
-### Prerequisites
+### Development
 
-- Node.js 18.x or higher
-- npm or yarn
+To run the development server:
 
-### Installation
+```bash
+npm run dev:safe
+```
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/yourusername/minimal-journal.git
-   cd minimal-journal
-   ```
+Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
 
-2. Install dependencies
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+### Production Build
 
-3. Run the development server
-   ```bash
-   # For faster development with Turbopack (may have some issues)
-   npm run dev
-   
-   # For more stable development without Turbopack
-   npm run dev:safe
-   ```
-
-4. Open your browser and navigate to http://localhost:3000
-
-### Known Issues and Workarounds
-
-There are some issues with Next.js 15.3.2 and the useSearchParams hook that might cause build errors. The following workarounds have been implemented:
-
-1. Added a `--no-lint` flag to the build command
-2. Created a `dev:safe` script that uses the standard Next.js development server instead of Turbopack
-3. Wrapped components using useSearchParams in Suspense boundaries
-4. Set image optimization to unoptimized for static export compatibility
-
-## Building for Production
+To create a production build:
 
 ```bash
 npm run build
-# or
-yarn build
 ```
 
-## Acknowledgements
+### Static Export (for GitHub Pages)
 
-- Design inspiration from [Ramotion](https://www.ramotion.com/)
-- Images from [Unsplash](https://unsplash.com/)
-- Icons from [Heroicons](https://heroicons.com/)
+To create a static export for GitHub Pages:
+
+```bash
+npm run deploy
+```
+
+This will create a `out` directory with the static export and a `.nojekyll` file for GitHub Pages.
+
+## Deployment
+
+This project can be deployed to GitHub Pages or any static hosting service.
+
+### GitHub Pages
+
+The project includes a GitHub Actions workflow for automatic deployment to GitHub Pages. Push to the `main` branch to trigger the deployment.
+
+## Technical Notes
+
+- Built with Next.js 15.3.2 and React 19
+- Uses framer-motion for animations
+- Studio Freight Lenis for smooth scrolling
+- Zustand for state management
+- Suspense boundaries to handle client-side data fetching
+- Custom loading indicators and navigation progress
+
+## Known Issues
+
+- Next.js 15.3.2 has some issues with `useSearchParams()` in client components. We've added Suspense boundaries as a workaround.
+- The experimental configuration in next.config.js may show warnings but can be safely ignored.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT

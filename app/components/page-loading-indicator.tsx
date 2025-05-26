@@ -5,12 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLoadingStore } from "../store/loading-store";
 import { usePathname, useSearchParams } from "next/navigation";
 
+// This component uses useSearchParams which requires a Suspense boundary
 export default function PageLoadingIndicator() {
   const { isLoading } = useLoadingStore();
   const progressRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
+  
+  // Safely access search params
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams ? searchParams.toString() : "";
 
   // Update progress simulation
   useEffect(() => {
@@ -46,7 +50,7 @@ export default function PageLoadingIndicator() {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [pathname, searchParams]);
+  }, [pathname, searchParamsString]);
 
   return (
     <AnimatePresence>

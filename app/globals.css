@@ -132,7 +132,7 @@ p {
 }
 
 .btn-primary:hover {
-  background-color: var(--secondary);
+  background-color: var(--primary-dark);
   transform: translateY(-2px);
 }
 

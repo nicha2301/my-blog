@@ -7,7 +7,9 @@
     "dev:safe": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next build --no-lint",
+    "deploy": "next build --no-lint && echo.> out/.nojekyll"
   },
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",

@@ -196,7 +196,7 @@ function BlogFilterContent() {
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <span className={`badge ${getCategoryBadgeClass(post.category)}`}>
+                      <span className="badge badge-primary">
                         {post.category}
                       </span>
                       <span className="text-sm text-neutral-500">{post.date}</span>
@@ -296,14 +296,6 @@ export default function Blog() {
   );
 }
 
-// Helper function to get appropriate badge class for category
-function getCategoryBadgeClass(category: string) {
-  return category.toLowerCase() === "design principles" || 
-         category.toLowerCase() === "color theory" || 
-         category.toLowerCase() === "ux patterns" 
-         ? "badge-primary" 
-         : "badge-secondary";
-}
 
 // Categories data
 const categories = [

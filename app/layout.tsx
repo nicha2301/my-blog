@@ -81,9 +81,15 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <NavigationProgress />
-          <PageLoadingIndicator />
-          <Header />
+          <Suspense fallback={<div className="h-0.5 bg-primary-dark"></div>}>
+            <NavigationProgress />
+          </Suspense>
+          <Suspense fallback={<div className="h-1 bg-primary-dark"></div>}>
+            <PageLoadingIndicator />
+          </Suspense>
+          <Suspense fallback={<div className="fixed top-0 left-0 w-full h-16 bg-background border-b border-neutral-200 dark:border-neutral-800"></div>}>
+            <Header />
+          </Suspense>
           <main className="min-h-screen pt-28">
             <AppWrapper>
               <PageTransition>
