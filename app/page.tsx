@@ -1,196 +1,346 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import NewsletterSignup from "./components/NewsletterSignup";
-import { getAllTags } from "./lib/contentful";
+import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-interface Post {
-  id: string;
-  title: string;
-  date: string;
-  description: string;
-  category: string;
-  coverImage?: string;
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
 }
 
-// Sample posts - these would typically come from a CMS or database
-const featuredPosts: Post[] = [
-  {
-    id: "hello-world",
-    title: "Hello World",
-    date: "May 25, 2025",
-    description: "Introduction to my new blog, my goals and what you can expect in the coming months as I share my journey in design and development.",
-    category: "Personal",
-    coverImage: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: "minimalist-design",
-    title: "The Beauty of Minimalist Design",
-    date: "May 24, 2025",
-    description: "Exploring the principles of minimalist design and how to apply them effectively to create impactful digital and physical products.",
-    category: "Design",
-    coverImage: "https://images.unsplash.com/photo-1493606278519-11aa9f86e40a?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: "nextjs-blog",
-    title: "Building a Blog with Next.js",
-    date: "May 23, 2025",
-    description: "A technical overview of how this blog was built using Next.js and TailwindCSS, focusing on performance optimizations and SEO.",
-    category: "Development",
-    coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=800&auto=format&fit=crop"
-  },
-  {
-    id: "photography-basics",
-    title: "Photography Basics: Composition",
-    date: "May 22, 2025",
-    description: "Learn the fundamental principles of photographic composition to improve your photography skills instantly.",
-    category: "Photography",
-    coverImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop"
-  }
-];
+export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
 
-export default async function Home() {
-  const popularTags = await getAllTags();
+  // GSAP animations
+  useEffect(() => {
+    if (!heroRef.current) return;
+
+    const heroTimeline = gsap.timeline();
+    heroTimeline.fromTo(
+      ".hero-title",
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+      0
+    );
+    heroTimeline.fromTo(
+      ".hero-subtitle",
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+      0.2
+    );
+
+    // Scrolling animations
+    if (featuredRef.current) {
+      gsap.fromTo(
+        ".featured-article",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.2,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: featuredRef.current,
+            start: "top 80%",
+          },
+        }
+      );
+    }
+
+    // Clean up
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, []);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <section className="py-10 sm:py-16">
-        <div className="flex flex-col md:flex-row gap-10 items-center mb-12">
-          <div className="md:w-2/3">
-            <h1 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
-              Khám phá ý tưởng về <span className="text-gray-600 dark:text-gray-300">thiết kế</span>, <span className="text-gray-600 dark:text-gray-300">phát triển web</span>, và <span className="text-gray-600 dark:text-gray-300">nhiếp ảnh</span>
+    <>
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="hero-title text-3xl md:text-4xl font-bold mb-6">
+              A minimalist approach to blogging and digital content.
             </h1>
-            <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-              Blog chia sẻ những suy nghĩ và kinh nghiệm về thiết kế tối giản, phát triển web và nhiếp ảnh. Được viết bởi một nhà thiết kế và phát triển.
+            <p className="hero-subtitle text-lg text-neutral-600 dark:text-neutral-400 mb-8">
+              Exploring design, typography, and thoughtful interactions through a clean and simplified lens.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/posts" className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors dark:bg-gray-700 dark:hover:bg-gray-600">
-                Đọc bài viết
-              </Link>
-              <Link href="/projects" className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                Xem dự án
+            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-8 mt-8">
+              <Link href="/blog" className="btn btn-primary">
+                Read Journal
               </Link>
             </div>
           </div>
-          <div className="md:w-1/3 relative bg-gray-100 dark:bg-gray-800 rounded-xl p-2">
-            <Image 
-              src="https://images.unsplash.com/photo-1522542550221-31fd19575a2d?q=80&w=400&auto=format&fit=crop" 
-              alt="Workspace with laptop and notebook" 
-              width={400} 
-              height={300}
-              className="rounded-lg object-cover aspect-[4/3]"
-            />
+        </div>
+      </section>
+
+      {/* Featured Articles */}
+      <section ref={featuredRef} className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-baseline mb-12">
+            <h2 className="section-heading text-2xl font-bold">Featured Articles</h2>
+            <Link href="/blog" className="link mt-4 md:mt-0">View All</Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Article 1 */}
+            <motion.article 
+              className="featured-article"
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="img-zoom h-60 relative overflow-hidden mb-4">
+                <Image
+                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop"
+                  alt="Article thumbnail"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover"
+                />
+              </div>
+              <span className="badge badge-primary mb-3">Design Principles</span>
+              <Link href="/blog/design-principles">
+                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">The Art of Minimalism in Digital Spaces</h3>
+              </Link>
+              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+                Explore how less becomes more in the digital landscape, and why minimal design continues to dominate.
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-neutral-500">June 12, 2023</span>
+                <Link href="/blog/design-principles" className="link">Read</Link>
+              </div>
+            </motion.article>
+
+            {/* Article 2 */}
+            <motion.article 
+              className="featured-article"
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="img-zoom h-60 relative overflow-hidden mb-4">
+                <Image
+                  src="https://images.unsplash.com/photo-1523726491678-bf852e717f6a?q=80&w=1770&auto=format&fit=crop"
+                  alt="Article thumbnail"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover"
+                />
+              </div>
+              <span className="badge badge-secondary mb-3">Typography</span>
+              <Link href="/blog/typography-trends">
+                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">Typography Trends for Modern Interfaces</h3>
+              </Link>
+              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+                Discover the latest typography trends shaping how we read and interact with digital content.
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-neutral-500">May 28, 2023</span>
+                <Link href="/blog/typography-trends" className="link">Read</Link>
+              </div>
+            </motion.article>
+
+            {/* Article 3 */}
+            <motion.article 
+              className="featured-article"
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="img-zoom h-60 relative overflow-hidden mb-4">
+                <Image
+                  src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?q=80&w=1964&auto=format&fit=crop"
+                  alt="Article thumbnail"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover"
+                />
+              </div>
+              <span className="badge badge-primary mb-3">Interaction</span>
+              <Link href="/blog/micro-interactions">
+                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">Micro-Interactions: The Details That Matter</h3>
+              </Link>
+              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+                How subtle animations and feedback create memorable user experiences that feel more human.
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-neutral-500">May 15, 2023</span>
+                <Link href="/blog/micro-interactions" className="link">Read</Link>
+              </div>
+            </motion.article>
           </div>
         </div>
-        
-        <div className="h-[2px] w-32 bg-gray-300 dark:bg-gray-700 my-12 mx-auto"></div>
       </section>
 
-      <section className="mb-16">
-        <div className="flex items-baseline justify-between mb-8">
-          <h2 className="text-2xl font-bold">Bài viết gần đây</h2>
-          <Link href="/posts" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white text-sm">
-            Xem tất cả →
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {featuredPosts.slice(0, 2).map((post) => (
-            <article key={post.id} className="group flex flex-col bg-white dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-md transition-all">
-              <Link href={`/posts/${post.id}`} className="h-full flex flex-col">
-                {post.coverImage && (
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={post.coverImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 right-3 bg-white dark:bg-gray-800 px-2 py-1 text-xs rounded-full">
-                      {post.category}
-                    </div>
-                  </div>
-                )}
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">{post.date}</div>
-                  <h3 className="text-xl font-semibold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-300 text-sm flex-grow">
-                    {post.description}
-                  </p>
-                  <div className="mt-4 text-blue-600 dark:text-blue-400 text-sm font-medium">
-                    Đọc tiếp →
-                  </div>
-                </div>
-              </Link>
-            </article>
-          ))}
-        </div>
-        
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {featuredPosts.slice(2, 4).map((post) => (
-            <article key={post.id} className="group flex bg-white dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-all">
-              <Link href={`/posts/${post.id}`} className="flex flex-row w-full">
-                {post.coverImage && (
-                  <div className="relative w-1/3 min-h-full">
-                    <Image
-                      src={post.coverImage}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <div className="p-4 w-2/3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{post.date}</span>
-                    <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full">
-                      {post.category}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-medium mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-2">
-                    {post.description}
-                  </p>
-                </div>
-              </Link>
-            </article>
-          ))}
-        </div>
-
-        <div className="text-center mt-10">
-          <Link href="/posts" className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center">
-            Xem tất cả bài viết
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-            </svg>
-          </Link>
+      {/* Categories Section */}
+      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="container mx-auto px-4">
+          <h2 className="section-heading text-2xl font-bold mb-12">Topics</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
+              <motion.div
+                key={category.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="border border-neutral-200 dark:border-neutral-800 p-6 text-center"
+              >
+                <h3 className="text-lg font-bold mb-2">{category.title}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4">{category.description}</p>
+                <Link href={category.link} className="link text-sm">Explore</Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
-      
-      <NewsletterSignup />
 
-      <section className="mb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Chủ đề được quan tâm</h2>
-          <Link href="/tags" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white text-sm">
-            Xem tất cả →
-          </Link>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {popularTags.slice(0, 9).map((tag) => (
-            <Link 
-              key={tag} 
-              href={`/tags/${encodeURIComponent(tag)}`} 
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      {/* Newsletter Section */}
+      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
             >
-              {tag}
-            </Link>
-          ))}
+              <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
+              <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8">
+                Subscribe to our newsletter for exclusive content and insights.
+              </p>
+              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                <input 
+                  type="email" 
+                  placeholder="Your email address" 
+                  className="input flex-grow min-w-0"
+                  required
+                />
+                <button 
+                  type="submit" 
+                  className="btn btn-primary whitespace-nowrap"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </motion.div>
+          </div>
         </div>
       </section>
-    </div>
+
+      {/* Latest Articles */}
+      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-baseline mb-12">
+            <h2 className="section-heading text-2xl font-bold">Latest Articles</h2>
+            <Link href="/blog" className="link mt-4 md:mt-0">View All</Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {latestArticles.map((article, index) => (
+              <motion.article
+                key={article.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="flex flex-col md:flex-row gap-6 group"
+              >
+                <div className="img-zoom w-full md:w-32 h-32 md:h-32 flex-shrink-0 overflow-hidden">
+                  <Image
+                    src={article.image}
+                    alt={article.title}
+                    width={280}
+                    height={200}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className={`badge ${article.categoryColor} mb-3`}>{article.category}</span>
+                  <Link href={article.link}>
+                    <h3 className="text-lg font-bold mb-2 group-hover:text-secondary transition-colors">{article.title}</h3>
+                  </Link>
+                  <p className="text-neutral-600 dark:text-neutral-400 mb-2 line-clamp-2 text-sm">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-500">{article.date}</span>
+                    <Link href={article.link} className="link text-sm">Read</Link>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
+
+// Category data
+const categories = [
+  {
+    title: "Design Principles",
+    description: "Fundamental concepts that guide effective design",
+    link: "/categories/design-principles"
+  },
+  {
+    title: "Typography",
+    description: "The art and technique of arranging type",
+    link: "/categories/typography"
+  },
+  {
+    title: "Color Theory",
+    description: "Understanding the impact of color in design",
+    link: "/categories/color-theory"
+  },
+  {
+    title: "UX Patterns",
+    description: "Best practices for exceptional user experiences",
+    link: "/categories/ux-patterns"
+  }
+];
+
+// Latest articles data
+const latestArticles = [
+  {
+    title: "The Psychology of White Space in Web Design",
+    excerpt: "Understanding how negative space influences user perception and content readability.",
+    image: "https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?q=80&w=1780&auto=format&fit=crop",
+    category: "Design Principles",
+    categoryColor: "badge-primary",
+    date: "June 8, 2023",
+    link: "/blog/white-space-psychology"
+  },
+  {
+    title: "Designing for Accessibility: A Comprehensive Guide",
+    excerpt: "Learn how to create inclusive designs that work for all users, regardless of abilities.",
+    image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1770&auto=format&fit=crop",
+    category: "Accessibility",
+    categoryColor: "badge-secondary",
+    date: "June 5, 2023",
+    link: "/blog/accessibility-guide"
+  },
+  {
+    title: "Color Psychology in Modern Interfaces",
+    excerpt: "How different color choices influence user behavior and emotional responses.",
+    image: "https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?q=80&w=1771&auto=format&fit=crop",
+    category: "Color Theory",
+    categoryColor: "badge-primary",
+    date: "June 1, 2023",
+    link: "/blog/color-psychology"
+  },
+  {
+    title: "The Evolution of Design Systems",
+    excerpt: "Tracing the development of design systems from print to digital and beyond.",
+    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1770&auto=format&fit=crop",
+    category: "Design Systems",
+    categoryColor: "badge-secondary",
+    date: "May 25, 2023",
+    link: "/blog/design-systems-evolution"
+  }
+];

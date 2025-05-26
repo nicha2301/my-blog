@@ -9,24 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "contentful": "^11.5.23",
-    "date-fns": "^4.1.0",
+    "@studio-freight/lenis": "^1.0.42",
+    "framer-motion": "^12.12.2",
+    "gsap": "^3.13.0",
     "next": "15.3.2",
-    "next-seo": "^6.8.0",
-    "next-themes": "^0.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0"
+    "sass": "^1.89.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4.1.7",
-    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
