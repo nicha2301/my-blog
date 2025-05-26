@@ -4,13 +4,13 @@
   --background: #ffffff;
   --foreground: #171717;
   
-  /* Minimalist color palette */
-  --primary: #000000;
-  --primary-dark: #171717;
-  --secondary: #444444;
-  --secondary-light: #777777;
-  --accent: #111111;
-  --accent-light: #333333;
+  /* Updated luxury color palette */
+  --primary: #AD8B73; /* Warm taupe (was secondary) */
+  --primary-dark: #8A6F5B; /* Darker taupe */
+  --secondary: #4F3B78; /* Deep purple (was primary) */
+  --secondary-light: #6B52A3;
+  --accent: #E3CAA5; /* Soft gold */
+  --accent-light: #FFFBE9;
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
   --neutral-200: #e5e5e5;
@@ -34,7 +34,7 @@
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
   
   /* NProgress variables */
-  --nprogress-color: #000000;
+  --nprogress-color: #AD8B73;
   --nprogress-height: 2px;
 }
 
@@ -43,15 +43,15 @@
   --foreground: #f5f5f5;
   
   /* Dark mode adjustments */
-  --primary: #f5f5f5;
-  --primary-dark: #e5e5e5;
-  --secondary: #a3a3a3;
-  --secondary-light: #d4d4d4;
-  --accent: #f5f5f5;
-  --accent-light: #e5e5e5;
+  --primary: #CEB195; /* Lighter taupe (was secondary) */
+  --primary-dark: #B59D80;
+  --secondary: #9A7FCB; /* Lighter purple (was primary) */
+  --secondary-light: #B29FD9;
+  --accent: #FFDC97; /* Brighter gold */
+  --accent-light: #FFF6DD;
   
   /* NProgress variables in dark mode */
-  --nprogress-color: #ffffff;
+  --nprogress-color: #CEB195;
 }
 
 @theme inline {
@@ -176,6 +176,26 @@ p {
   }
 }
 
+/* New animation for scroll indicator */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite ease-in-out;
+}
+
+/* Ping animation with slower speed */
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 1; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
 /* Card and container styles */
 .card {
   background: var(--background);
@@ -192,11 +212,11 @@ p {
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -5px rgba(79, 59, 120, 0.1), 0 8px 10px -6px rgba(79, 59, 120, 0.05);
 }
 
 .dark .card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(154, 127, 203, 0.15), 0 8px 10px -6px rgba(154, 127, 203, 0.1);
 }
 
 .container {
@@ -206,22 +226,27 @@ p {
   padding: 0 2rem;
 }
 
-/* Modern gradient text */
+/* Enhanced gradient text */
 .gradient-text {
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-/* Glass effect */
+/* Enhanced glass effect */
 .glass {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
 }
 
 .dark .glass {
   background: rgba(15, 15, 15, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
 }
 
 /* Modern link style */
@@ -250,13 +275,10 @@ p {
   transform: scaleX(1);
 }
 
-/* Badge */
+/* Badge styles - enhanced */
 .badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   padding: 0.25rem 0.75rem;
-  border-radius: 0;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -264,22 +286,23 @@ p {
 }
 
 .badge-primary {
-  background-color: var(--neutral-200);
-  color: var(--primary);
+  background-color: var(--primary);
+  color: white;
 }
 
 .dark .badge-primary {
-  background-color: var(--neutral-800);
+  background-color: var(--primary);
+  color: white;
 }
 
 .badge-secondary {
-  background-color: var(--neutral-900);
-  color: var(--neutral-100);
+  background-color: var(--secondary);
+  color: white;
 }
 
 .dark .badge-secondary {
-  background-color: var(--neutral-100);
-  color: var(--neutral-900);
+  background-color: var(--secondary);
+  color: white;
 }
 
 /* Section heading */
@@ -385,4 +408,51 @@ p {
 /* Disable spinner */
 #nprogress .spinner {
   display: none !important;
+}
+
+/* New 3D button hover effect */
+.btn-3d {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-3d:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.btn-3d:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn-3d:hover::before {
+  opacity: 1;
+}
+
+/* Add animation for section reveals */
+@keyframes revealUp {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.reveal-up {
+  animation: revealUp 1s var(--ease-out-expo) forwards;
 }

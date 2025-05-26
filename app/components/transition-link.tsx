@@ -1,48 +1,52 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { startPageLoading } from "@/app/store/loading-store";
+import { startPageLoading } from "../store/loading-store";
 
 interface TransitionLinkProps {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   onClick?: () => void;
 }
 
-export default function TransitionLink({ 
-  href, 
-  children, 
-  className = "", 
+export default function TransitionLink({
+  href,
+  children,
+  className,
   onClick,
-  ...props 
-}: TransitionLinkProps & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "className" | "onClick">) {
+}: TransitionLinkProps) {
   const router = useRouter();
-  
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Enable default behavior for external links
+    if (href.startsWith("http") || href.startsWith("mailto:")) {
+      return;
+    }
+    
     e.preventDefault();
     
-    // Start loading animation immediately when clicked
+    // Start loading animation
     startPageLoading();
     
-    // Execute any additional onClick handlers
-    if (onClick) onClick();
-    
-    // Small delay to ensure the loading animation is visible
+    // Call any onClick handlers if provided
+    if (onClick) {
+      onClick();
+    }
+
+    // Add a small delay for any exit animations if needed
     setTimeout(() => {
-      // Navigate to the new page
       router.push(href);
-    }, 50);
+    }, 100); // 100ms delay for any transition effects
   };
-  
+
   return (
     <Link 
       href={href} 
       className={className}
       onClick={handleClick}
-      {...props}
     >
       {children}
     </Link>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -10,7 +10,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export default function About() {
+function AboutContent() {
   useEffect(() => {
     // GSAP animations for scrolling elements
     const textElements = document.querySelectorAll(".animate-text");
@@ -90,7 +90,7 @@ export default function About() {
             <div>
               <h2 className="section-heading text-2xl font-bold mb-8">Our Mission</h2>
               <p className="animate-text text-lg text-neutral-600 dark:text-neutral-400 mb-6">
-                At Minimal Journal, we believe that great design is more than just aesthetics—it's about the thoughtful fusion of form and function to create meaningful, impactful experiences.
+                At Minimal Journal, we believe that great design is more than just aesthetics—it&apos;s about the thoughtful fusion of form and function to create meaningful, impactful experiences.
               </p>
               <p className="animate-text text-lg text-neutral-600 dark:text-neutral-400 mb-6">
                 Our mission is to explore, celebrate, and share the principles of exceptional design across digital and physical spaces. We aim to inspire both creators and consumers to appreciate the subtle details that make designs truly remarkable.
@@ -192,7 +192,7 @@ export default function About() {
             </div>
             <div className="p-10">
               <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-6">
-                We're always looking for passionate individuals to join our team. If you're enthusiastic about design, writing, or digital experiences, we'd love to hear from you.
+                We&apos;re always looking for passionate individuals to join our team. If you&apos;re enthusiastic about design, writing, or digital experiences, we&apos;d love to hear from you.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a href="/contact" className="btn btn-primary">
@@ -204,6 +204,14 @@ export default function About() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function About() {
+  return (
+    <Suspense fallback={<div>Loading about page...</div>}>
+      <AboutContent />
+    </Suspense>
   );
 }
 

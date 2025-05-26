@@ -1,60 +1,70 @@
 "use client";
 
-import { useEffect } from "react";
-import { startPageLoading, stopPageLoading } from "../store/loading-store";
+import { useState, useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 
-/**
- * Hook to monitor resource loading state and trigger loading indicator
- * This handles cases where there are images or other resources being loaded
- */
-export function useResourceLoading() {
+type ResourceState = {
+  isLoading: boolean;
+  progress: number;
+};
+
+const useResourceLoading = (): ResourceState => {
+  const [state, setState] = useState<ResourceState>({
+    isLoading: false,
+    progress: 0,
+  });
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   useEffect(() => {
-    // Function to handle resource loading events
-    const handleResourceLoadStart = () => {
-      startPageLoading();
-    };
-
-    const handleResourceLoadComplete = () => {
-      stopPageLoading();
-    };
-
-    // When all resources are loaded
-    window.addEventListener("load", handleResourceLoadComplete);
-    
-    // When navigating away, resources will start loading
-    window.addEventListener("beforeunload", handleResourceLoadStart);
-    
-    // Also handle image loading individually
-    document.addEventListener("lazyloaded", handleResourceLoadComplete);
-    
-    // Monitor lazy-loaded images
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "attributes" && mutation.attributeName === "src") {
-          const img = mutation.target as HTMLImageElement;
-          if (img.complete) {
-            handleResourceLoadComplete();
-          } else {
-            handleResourceLoadStart();
-            img.addEventListener("load", handleResourceLoadComplete);
-            img.addEventListener("error", handleResourceLoadComplete);
+    // Track route changes to show loading indicator
+    const handleRouteChangeStart = () => {
+      setState({
+        isLoading: true,
+        progress: 20,
+      });
+      
+      // Simulate incremental progress
+      const interval = setInterval(() => {
+        setState(prevState => {
+          if (prevState.progress >= 90) {
+            clearInterval(interval);
+            return prevState;
           }
-        }
-      }
-    });
-    
-    // Start observing the document
-    observer.observe(document.body, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["src"]
-    });
-    
-    return () => {
-      window.removeEventListener("load", handleResourceLoadComplete);
-      window.removeEventListener("beforeunload", handleResourceLoadStart);
-      document.removeEventListener("lazyloaded", handleResourceLoadComplete);
-      observer.disconnect();
+          
+          return {
+            ...prevState,
+            progress: Math.min(90, prevState.progress + Math.random() * 10),
+          };
+        });
+      }, 300);
+
+      return () => clearInterval(interval);
     };
-  }, []);
-} 
+
+    const handleRouteChangeComplete = () => {
+      setState({
+        isLoading: false,
+        progress: 100,
+      });
+    };
+
+    // Start loading when component mounts
+    const cleanup = handleRouteChangeStart();
+    
+    // Complete loading after a delay to simulate completion
+    const timer = setTimeout(() => {
+      handleRouteChangeComplete();
+    }, 500);
+
+    return () => {
+      cleanup?.();
+      clearTimeout(timer);
+    };
+  }, [pathname, searchParams]);
+
+  return state;
+};
+
+export { useResourceLoading }; 

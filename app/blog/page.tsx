@@ -3,11 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function Blog() {
+// Wrap the component that uses useSearchParams in Suspense
+function BlogFilterContent() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
+  
+  useEffect(() => {
+    // Get category from URL on first load if present
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   // Filter posts by category and search query
   const filteredPosts = posts.filter(post => {
@@ -219,7 +230,7 @@ export default function Blog() {
             <div className="text-center py-16">
               <h3 className="text-2xl font-bold mb-4">No articles found</h3>
               <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-                We couldn't find any articles matching your current filters. Try adjusting your search or browse all articles.
+                We couldn&apos;t find any articles matching your current filters. Try adjusting your search or browse all articles.
               </p>
               <button 
                 onClick={() => {
@@ -265,6 +276,23 @@ export default function Blog() {
         </div>
       </section>
     </>
+  );
+}
+
+// Main Blog component with Suspense boundary for useSearchParams()
+function BlogContent() {
+  return (
+    <Suspense fallback={<div className="py-16 text-center">Loading blog content...</div>}>
+      <BlogFilterContent />
+    </Suspense>
+  );
+}
+
+export default function Blog() {
+  return (
+    <Suspense fallback={<div>Loading blog content...</div>}>
+      <BlogContent />
+    </Suspense>
   );
 }
 

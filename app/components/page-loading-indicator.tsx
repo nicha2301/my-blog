@@ -1,36 +1,46 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLoadingStore } from "../store/loading-store";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useLoadingStore } from "@/app/store/loading-store";
-import NProgress from "nprogress";
-
-// Configure NProgress
-NProgress.configure({
-  showSpinner: false,
-  trickleSpeed: 100,
-  minimum: 0.15,
-  easing: "ease",
-  speed: 400,
-});
 
 export default function PageLoadingIndicator() {
   const { isLoading } = useLoadingStore();
+  const progressRef = useRef(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Start or stop NProgress based on the loading state
+  // Update progress simulation
   useEffect(() => {
     if (isLoading) {
-      NProgress.start();
+      progressRef.current = 20; // Start at 20%
+
+      // Simulate progress increasing
+      intervalRef.current = setInterval(() => {
+        progressRef.current = Math.min(90, progressRef.current + Math.random() * 10);
+      }, 300);
     } else {
-      NProgress.done();
+      progressRef.current = 100; // Complete the progress
+      
+      // Clear the interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [isLoading]);
-  
-  // Automatically end loading when route changes are complete
+
+  // Reset loading state on route change
   useEffect(() => {
-    // Small delay to ensure smooth transition
+    // Small delay to finish any animations
     const timer = setTimeout(() => {
       useLoadingStore.getState().stopLoading();
     }, 300);
@@ -39,12 +49,17 @@ export default function PageLoadingIndicator() {
   }, [pathname, searchParams]);
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[1000]">
+    <AnimatePresence>
       {isLoading && (
-        <div className="absolute top-0 left-0 w-full h-0.5 bg-background">
-          <div className="h-full animate-progress-bar"></div>
-        </div>
+        <motion.div 
+          key="loading-bar"
+          className="fixed top-0 left-0 h-[2px] bg-primary z-[100]"
+          initial={{ width: "0%" }}
+          animate={{ width: `${progressRef.current}%` }}
+          exit={{ opacity: 0 }}
+          transition={{ ease: "easeOut" }}
+        />
       )}
-    </div>
+    </AnimatePresence>
   );
 } 

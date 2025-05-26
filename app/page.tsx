@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { useEffect, useRef, useState, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -11,188 +11,201 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export default function Home() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const featuredRef = useRef<HTMLDivElement>(null);
+function HomeContent() {
+  const headerRef = useRef(null);
+  const [currentSection, setCurrentSection] = useState(0);
 
-  // GSAP animations
   useEffect(() => {
-    if (!heroRef.current) return;
-
-    const heroTimeline = gsap.timeline();
-    heroTimeline.fromTo(
-      ".hero-title",
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
-      0
-    );
-    heroTimeline.fromTo(
-      ".hero-subtitle",
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
-      0.2
-    );
-
-    // Scrolling animations
-    if (featuredRef.current) {
+    // Animate header text on load
+    if (headerRef.current) {
       gsap.fromTo(
-        ".featured-article",
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
+        headerRef.current.querySelectorAll(".animate-line"),
+        { 
+          opacity: 0,
+          y: 40,
+        },
+        { 
           opacity: 1,
+          y: 0,
+          duration: 1.2,
           stagger: 0.2,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: featuredRef.current,
-            start: "top 80%",
-          },
+          ease: "power3.out"
         }
       );
     }
 
+    // Set up scroll animations for sections
+    const sections = document.querySelectorAll('.animate-section');
+
+    sections.forEach((section, i) => {
+      gsap.fromTo(
+        section,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            onEnter: () => {
+              setCurrentSection(i);
+            }
+          }
+        }
+      );
+    });
+
     // Clean up
     return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, []);
 
   return (
     <>
       {/* Hero Section */}
-      <section ref={heroRef} className="relative py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="hero-title text-3xl md:text-4xl font-bold mb-6">
-              A minimalist approach to blogging and digital content.
+      <section className="min-h-[90vh] flex items-center justify-center relative overflow-hidden -mt-28">
+        {/* Background gradients */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5 z-0" />
+        <div className="absolute h-64 w-64 rounded-full bg-primary/10 blur-3xl -top-12 -right-12" />
+        <div className="absolute h-96 w-96 rounded-full bg-secondary/10 blur-3xl -bottom-20 -left-20" />
+
+        <div className="container relative z-10">
+          <div className="max-w-4xl" ref={headerRef}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6"
+            >
+              <span className="badge badge-primary">Design Journal</span>
+            </motion.div>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+              <div className="animate-line">Exploring the art of</div>
+              <div className="animate-line bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">minimal design</div>
+              <div className="animate-line">and thoughtful interactions.</div>
             </h1>
-            <p className="hero-subtitle text-lg text-neutral-600 dark:text-neutral-400 mb-8">
-              Exploring design, typography, and thoughtful interactions through a clean and simplified lens.
-            </p>
-            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-8 mt-8">
-              <Link href="/blog" className="btn btn-primary">
-                Read Journal
+            <div className="mt-10 animate-line">
+              <Link href="/blog" className="btn btn-primary px-8 py-3">
+                Explore Journal
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+          <motion.div 
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="flex flex-col items-center"
+          >
+            <span className="text-sm mb-2">Scroll</span>
+            <svg width="16" height="24" viewBox="0 0 16 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="14" height="22" rx="7" stroke="currentColor" strokeWidth="2"/>
+              <circle className="animate-ping-slow" cx="8" cy="8" r="3" fill="currentColor"/>
+            </svg>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Articles Section */}
+      <section className="py-24 animate-section">
+        <div className="container">
+          <h2 className="section-heading text-3xl font-bold mb-16">Featured Articles</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            {featuredArticles.map((article, index) => (
+              <motion.div
+                key={article.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <div className="img-zoom relative aspect-[4/3] overflow-hidden mb-6">
+                  <Image
+                    src={article.image}
+                    alt={article.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <Link href={`/blog/${article.slug}`}>
+                    <h3 className="text-2xl font-bold mb-3 hover:text-secondary transition-colors">{article.title}</h3>
+                  </Link>
+                  <p className="text-neutral-600 dark:text-neutral-400 mb-6">{article.excerpt}</p>
+                  <Link href={`/blog/${article.slug}`} className="btn btn-secondary">Read Article</Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="mt-16 text-center">
+            <Link href="/blog" className="btn btn-outline">
+              View All Articles
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 border-t border-neutral-200 dark:border-neutral-800 animate-section">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div className="relative h-[500px]">
+              <div className="absolute w-64 h-64 bg-primary/10 rounded-full blur-3xl top-0 left-0 z-0" />
+              <div className="relative z-10 h-full">
+                <Image
+                  src="https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?q=80&w=1904&auto=format&fit=crop"
+                  alt="About Minimal Journal"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <span className="badge badge-primary mb-6">About Us</span>
+              <h2 className="text-3xl font-bold mb-6">Minimal Journal</h2>
+              <p className="text-lg mb-6 text-neutral-600 dark:text-neutral-400">
+                At Minimal Journal, we believe that great design is more than just aesthetics—it's about the thoughtful fusion of form and function to create meaningful, impactful experiences.
+              </p>
+              <p className="text-lg mb-8 text-neutral-600 dark:text-neutral-400">
+                Our mission is to explore, celebrate, and share the principles of exceptional design across digital and physical spaces, inspiring both creators and consumers.
+              </p>
+              <Link href="/about" className="btn btn-secondary">
+                Learn More About Us
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Articles */}
-      <section ref={featuredRef} className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-baseline mb-12">
-            <h2 className="section-heading text-2xl font-bold">Featured Articles</h2>
-            <Link href="/blog" className="link mt-4 md:mt-0">View All</Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Article 1 */}
-            <motion.article 
-              className="featured-article"
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="img-zoom h-60 relative overflow-hidden mb-4">
-                <Image
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop"
-                  alt="Article thumbnail"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover"
-                />
-              </div>
-              <span className="badge badge-primary mb-3">Design Principles</span>
-              <Link href="/blog/design-principles">
-                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">The Art of Minimalism in Digital Spaces</h3>
-              </Link>
-              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-                Explore how less becomes more in the digital landscape, and why minimal design continues to dominate.
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">June 12, 2023</span>
-                <Link href="/blog/design-principles" className="link">Read</Link>
-              </div>
-            </motion.article>
-
-            {/* Article 2 */}
-            <motion.article 
-              className="featured-article"
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="img-zoom h-60 relative overflow-hidden mb-4">
-                <Image
-                  src="https://images.unsplash.com/photo-1523726491678-bf852e717f6a?q=80&w=1770&auto=format&fit=crop"
-                  alt="Article thumbnail"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover"
-                />
-              </div>
-              <span className="badge badge-secondary mb-3">Typography</span>
-              <Link href="/blog/typography-trends">
-                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">Typography Trends for Modern Interfaces</h3>
-              </Link>
-              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-                Discover the latest typography trends shaping how we read and interact with digital content.
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">May 28, 2023</span>
-                <Link href="/blog/typography-trends" className="link">Read</Link>
-              </div>
-            </motion.article>
-
-            {/* Article 3 */}
-            <motion.article 
-              className="featured-article"
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="img-zoom h-60 relative overflow-hidden mb-4">
-                <Image
-                  src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?q=80&w=1964&auto=format&fit=crop"
-                  alt="Article thumbnail"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover"
-                />
-              </div>
-              <span className="badge badge-primary mb-3">Interaction</span>
-              <Link href="/blog/micro-interactions">
-                <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">Micro-Interactions: The Details That Matter</h3>
-              </Link>
-              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-                How subtle animations and feedback create memorable user experiences that feel more human.
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">May 15, 2023</span>
-                <Link href="/blog/micro-interactions" className="link">Read</Link>
-              </div>
-            </motion.article>
-          </div>
-        </div>
-      </section>
-
       {/* Categories Section */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
-        <div className="container mx-auto px-4">
-          <h2 className="section-heading text-2xl font-bold mb-12">Topics</h2>
+      <section className="py-24 animate-section">
+        <div className="container">
+          <h2 className="section-heading text-3xl font-bold mb-16 text-center">Explore Topics</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {categories.map((category, index) => (
               <motion.div
-                key={category.title}
+                key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="border border-neutral-200 dark:border-neutral-800 p-6 text-center"
+                className="border border-neutral-200 dark:border-neutral-800 p-8 text-center"
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
-                <h3 className="text-lg font-bold mb-2">{category.title}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4">{category.description}</p>
-                <Link href={category.link} className="link text-sm">Explore</Link>
+                <div className="mb-4">{category.icon}</div>
+                <h3 className="text-xl font-bold mb-3">{category.name}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400 mb-6">{category.description}</p>
+                <Link href={`/blog?category=${category.id}`} className="link">
+                  Explore Articles
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -200,80 +213,25 @@ export default function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
-        <div className="container mx-auto px-4">
+      <section className="py-24 border-t border-neutral-200 dark:border-neutral-800 animate-section">
+        <div className="container">
           <div className="max-w-2xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
-              <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8">
-                Subscribe to our newsletter for exclusive content and insights.
-              </p>
-              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <input 
-                  type="email" 
-                  placeholder="Your email address" 
-                  className="input flex-grow min-w-0"
-                  required
-                />
-                <button 
-                  type="submit" 
-                  className="btn btn-primary whitespace-nowrap"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Latest Articles */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-baseline mb-12">
-            <h2 className="section-heading text-2xl font-bold">Latest Articles</h2>
-            <Link href="/blog" className="link mt-4 md:mt-0">View All</Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {latestArticles.map((article, index) => (
-              <motion.article
-                key={article.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex flex-col md:flex-row gap-6 group"
-              >
-                <div className="img-zoom w-full md:w-32 h-32 md:h-32 flex-shrink-0 overflow-hidden">
-                  <Image
-                    src={article.image}
-                    alt={article.title}
-                    width={280}
-                    height={200}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <span className={`badge ${article.categoryColor} mb-3`}>{article.category}</span>
-                  <Link href={article.link}>
-                    <h3 className="text-lg font-bold mb-2 group-hover:text-secondary transition-colors">{article.title}</h3>
-                  </Link>
-                  <p className="text-neutral-600 dark:text-neutral-400 mb-2 line-clamp-2 text-sm">
-                    {article.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-500">{article.date}</span>
-                    <Link href={article.link} className="link text-sm">Read</Link>
-                  </div>
-                </div>
-              </motion.article>
-            ))}
+            <span className="badge badge-primary mb-6">Stay Updated</span>
+            <h2 className="text-3xl font-bold mb-6">Subscribe to Our Newsletter</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-8">
+              Get the latest articles, design resources, and exclusive content delivered directly to your inbox.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="input flex-grow"
+                required
+              />
+              <button type="submit" className="btn btn-primary whitespace-nowrap">
+                Subscribe
+              </button>
+            </form>
           </div>
         </div>
       </section>
@@ -281,66 +239,54 @@ export default function Home() {
   );
 }
 
-// Category data
-const categories = [
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading home page...</div>}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+// Featured articles data
+const featuredArticles = [
   {
-    title: "Design Principles",
-    description: "Fundamental concepts that guide effective design",
-    link: "/categories/design-principles"
+    title: "The Art of Minimalism in Digital Design",
+    slug: "minimalism-in-digital-design",
+    excerpt: "Explore how the principles of minimalism can create more effective, elegant, and user-friendly digital experiences that stand the test of time.",
+    image: "https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop"
   },
   {
-    title: "Typography",
-    description: "The art and technique of arranging type",
-    link: "/categories/typography"
-  },
-  {
-    title: "Color Theory",
-    description: "Understanding the impact of color in design",
-    link: "/categories/color-theory"
-  },
-  {
-    title: "UX Patterns",
-    description: "Best practices for exceptional user experiences",
-    link: "/categories/ux-patterns"
+    title: "Typography Trends for Modern Interfaces",
+    slug: "typography-trends",
+    excerpt: "Discover the latest typography trends shaping how we read and interact with digital content in today's design landscape.",
+    image: "https://images.unsplash.com/photo-1523726491678-bf852e717f6a?q=80&w=1770&auto=format&fit=crop"
   }
 ];
 
-// Latest articles data
-const latestArticles = [
+// Categories data
+const categories = [
   {
-    title: "The Psychology of White Space in Web Design",
-    excerpt: "Understanding how negative space influences user perception and content readability.",
-    image: "https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?q=80&w=1780&auto=format&fit=crop",
-    category: "Design Principles",
-    categoryColor: "badge-primary",
-    date: "June 8, 2023",
-    link: "/blog/white-space-psychology"
+    id: "design-principles",
+    name: "Design Principles",
+    description: "Fundamental concepts that guide effective and beautiful design across all mediums.",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mx-auto">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+    </svg>
   },
   {
-    title: "Designing for Accessibility: A Comprehensive Guide",
-    excerpt: "Learn how to create inclusive designs that work for all users, regardless of abilities.",
-    image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1770&auto=format&fit=crop",
-    category: "Accessibility",
-    categoryColor: "badge-secondary",
-    date: "June 5, 2023",
-    link: "/blog/accessibility-guide"
+    id: "typography",
+    name: "Typography",
+    description: "The art and technique of arranging type to make written language legible and appealing.",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mx-auto">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+    </svg>
   },
   {
-    title: "Color Psychology in Modern Interfaces",
-    excerpt: "How different color choices influence user behavior and emotional responses.",
-    image: "https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?q=80&w=1771&auto=format&fit=crop",
-    category: "Color Theory",
-    categoryColor: "badge-primary",
-    date: "June 1, 2023",
-    link: "/blog/color-psychology"
-  },
-  {
-    title: "The Evolution of Design Systems",
-    excerpt: "Tracing the development of design systems from print to digital and beyond.",
-    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1770&auto=format&fit=crop",
-    category: "Design Systems",
-    categoryColor: "badge-secondary",
-    date: "May 25, 2023",
-    link: "/blog/design-systems-evolution"
+    id: "interaction",
+    name: "Interaction Design",
+    description: "Creating engaging interfaces with meaningful animations and thoughtful user flows.",
+    icon: <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 mx-auto">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
+    </svg>
   }
 ];

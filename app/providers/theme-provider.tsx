@@ -53,7 +53,7 @@ export function ThemeProvider({
 
       // Mark as mounted
       setMounted(true);
-    } catch (e) {
+    } catch (error) {
       // Fallback in case of any errors
       setMounted(true);
     }
@@ -66,8 +66,8 @@ export function ThemeProvider({
     try {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       
-      const handleChange = (e: MediaQueryListEvent) => {
-        const newSystemTheme = e.matches ? "dark" : "light";
+      const handleChange = (event: MediaQueryListEvent) => {
+        const newSystemTheme = event.matches ? "dark" : "light";
         setSystemTheme(newSystemTheme);
         
         if (theme === "system") {
@@ -78,9 +78,9 @@ export function ThemeProvider({
 
       mediaQuery.addEventListener("change", handleChange);
       return () => mediaQuery.removeEventListener("change", handleChange);
-    } catch (e) {
+    } catch (error) {
       // Fallback in case of any errors
-      console.error("Error setting up theme listener:", e);
+      console.error("Error setting up theme listener:", error);
     }
   }, [mounted, theme]);
 
@@ -111,8 +111,8 @@ export function ThemeProvider({
       
       // Store in localStorage
       localStorage.setItem(storageKey, theme);
-    } catch (e) {
-      console.error("Error applying theme:", e);
+    } catch (error) {
+      console.error("Error applying theme:", error);
     }
   }, [theme, systemTheme, mounted, storageKey]);
 

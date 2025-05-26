@@ -2,15 +2,15 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import Lenis from '@studio-freight/lenis';
-import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from 'next/link';
+import { useEffect, useState, Suspense } from "react";
 import "./globals.css";
 import { ThemeProvider } from "./providers/theme-provider";
 import ThemeSwitcher from "./components/theme-switcher";
 import PageLoadingIndicator from "./components/page-loading-indicator";
 import TransitionLink from "./components/transition-link";
-import { useResourceLoading } from "./hooks/use-resource-loading";
+import PageTransition from "./components/page-transition";
+import NavigationProgress from "./components/navigation-progress";
+import AppWrapper from "./components/app-wrapper";
 import Script from 'next/script';
 
 const geistSans = Geist({
@@ -28,23 +28,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [mounted, setMounted] = useState(false);
-  
-  // Use resource loading hook to track page load completion
-  useResourceLoading();
-
-  useEffect(() => {
-    setMounted(true);
-    
-    // @ts-ignore - Fixing type issues with Lenis options
+  useEffect(() => {    
+    // Initialize smooth scrolling with Lenis
     const lenis = new Lenis({
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       smoothWheel: true,
-    });
+    } as any);
     
     function raf(time: number) {
       lenis.raf(time);
@@ -90,10 +81,15 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
+          <NavigationProgress />
           <PageLoadingIndicator />
           <Header />
           <main className="min-h-screen pt-28">
-            {children}
+            <AppWrapper>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </AppWrapper>
           </main>
           <Footer />
         </ThemeProvider>
@@ -105,11 +101,8 @@ export default function RootLayout({
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
-    setMounted(true);
-    
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -136,20 +129,22 @@ function Header() {
             : "py-6 bg-transparent"
         }`}
       >
-        <div className="container flex items-center justify-between">
-          <TransitionLink href="/" className="text-xl font-medium">
-            Minimal Journal
-          </TransitionLink>
+        <div className="container flex items-center">
+          <div className="flex-1">
+            <TransitionLink href="/" className="text-xl font-medium">
+              Minimal Journal
+            </TransitionLink>
+          </div>
           
           {/* Fixed width container for navigation to prevent layout shift */}
-          <div className="hidden md:flex gap-8 items-center justify-end min-w-[400px]">
+          <div className="hidden md:flex items-center justify-center gap-8 flex-1">
             <TransitionLink href="/" className="hover:text-secondary transition-colors">Home</TransitionLink>
             <TransitionLink href="/about" className="hover:text-secondary transition-colors">About</TransitionLink>
             <TransitionLink href="/blog" className="hover:text-secondary transition-colors">Journal</TransitionLink>
             <TransitionLink href="/contact" className="hover:text-secondary transition-colors">Contact</TransitionLink>
           </div>
           
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-1 justify-end">
             <ThemeSwitcher />
             <button 
               onClick={toggleMobileMenu} 
