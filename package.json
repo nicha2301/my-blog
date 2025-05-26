@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:safe": "next dev",
-    "build": "next build --no-lint",
+    "build": "NODE_ENV=production next build --no-lint",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build --no-lint",
-    "deploy": "next build --no-lint && echo.> out/.nojekyll"
+    "export": "NODE_ENV=production next build --no-lint",
+    "deploy": "NODE_ENV=production next build --no-lint && echo.> out/.nojekyll",
+    "deploy:win": "set NODE_ENV=production&& next build --no-lint && echo.> out/.nojekyll"
   },
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",

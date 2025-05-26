@@ -20,9 +20,11 @@ const nextConfig = {
     // Don't fail build on TypeScript errors
     ignoreBuildErrors: true,
   },
-  // Enable static export for GitHub Pages
-  output: 'export',
-  distDir: 'out',
+  // Enable static export only for production builds
+  ...(process.env.NODE_ENV === 'production' ? {
+    output: 'export',
+    distDir: 'out',
+  } : {}),
   
   // Ignore errors related to useSearchParams
   experimental: {
