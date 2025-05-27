@@ -306,6 +306,7 @@ const categories = [
   { id: "interaction", name: "Interaction" },
   { id: "ux patterns", name: "UX Patterns" },
   { id: "accessibility", name: "Accessibility" },
+  { id: "philosophy", name: "Philosophy" }
 ];
 
 // Blog posts data
@@ -338,93 +339,15 @@ const posts = [
   },
   {
     id: 3,
-    title: "Micro-Interactions: The Details That Matter",
-    slug: "micro-interactions",
-    excerpt: "How subtle animations and feedback create memorable user experiences that feel more human.",
-    category: "Interaction",
-    date: "May 15, 2023",
-    image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?q=80&w=1964&auto=format&fit=crop",
+    title: "The Philosophy of a Deflated Ball: Value, Neglect, and Memory",
+    slug: "philosophy-of-deflated-ball",
+    excerpt: "A philosophical exploration of the paradox of neglect and value through the metaphor of an abandoned, deflated soccer ball.",
+    category: "Philosophy",
+    date: "July 15, 2023",
+    image: "https://png.pngtree.com/background/20230703/original/pngtree-old-soccer-ball-poor-school-soccer-field-leisure-ground-tile-photo-picture-image_4124623.jpg",
     author: {
-      name: "Taylor Wilson",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1770&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 4,
-    title: "The Psychology of White Space in Web Design",
-    slug: "white-space-psychology",
-    excerpt: "Understanding how negative space influences user perception and content readability.",
-    category: "Design Principles",
-    date: "June 8, 2023",
-    image: "https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?q=80&w=1780&auto=format&fit=crop",
-    author: {
-      name: "Alex Morgan",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1522&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 5,
-    title: "Designing for Accessibility: A Comprehensive Guide",
-    slug: "accessibility-guide",
-    excerpt: "Learn how to create inclusive designs that work for all users, regardless of abilities.",
-    category: "Accessibility",
-    date: "June 5, 2023",
-    image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1770&auto=format&fit=crop",
-    author: {
-      name: "Jamie Chen",
-      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?q=80&w=1634&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 6,
-    title: "Color Psychology in Modern Interfaces",
-    slug: "color-psychology",
-    excerpt: "How different color choices influence user behavior and emotional responses.",
-    category: "Color Theory",
-    date: "June 1, 2023",
-    image: "https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?q=80&w=1771&auto=format&fit=crop",
-    author: {
-      name: "Taylor Wilson",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1770&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 7,
-    title: "The Evolution of Design Systems",
-    slug: "design-systems-evolution",
-    excerpt: "Tracing the development of design systems from print to digital and beyond.",
-    category: "Design Principles",
-    date: "May 25, 2023",
-    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1770&auto=format&fit=crop",
-    author: {
-      name: "Alex Morgan",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1522&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 8,
-    title: "Dark Mode Design: Best Practices",
-    slug: "dark-mode-design",
-    excerpt: "Creating effective and elegant dark mode interfaces that enhance user experience.",
-    category: "UX Patterns",
-    date: "May 18, 2023",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1770&auto=format&fit=crop",
-    author: {
-      name: "Jamie Chen",
-      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?q=80&w=1634&auto=format&fit=crop"
-    }
-  },
-  {
-    id: 9,
-    title: "Fluid Typography for Responsive Design",
-    slug: "fluid-typography",
-    excerpt: "How to implement typography that scales smoothly across different screen sizes.",
-    category: "Typography",
-    date: "May 10, 2023",
-    image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop",
-    author: {
-      name: "Taylor Wilson",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1770&auto=format&fit=crop"
+      name: "Michael Torres",
+      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1374&auto=format&fit=crop"
     }
   }
 ]; 
