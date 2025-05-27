@@ -456,3 +456,44 @@ p {
 .reveal-up {
   animation: revealUp 1s var(--ease-out-expo) forwards;
 }
+
+/* Custom animated underline effect for table of contents */
+.toc-link-item {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 2px;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.toc-link-item::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background: currentColor;
+  transform: translateX(-101%);
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.toc-link-item:hover::after {
+  transform: translateX(0);
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  animation: pulse 1.5s infinite alternate;
+}
+
+.toc-link-active::after {
+  transform: translateX(0);
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}

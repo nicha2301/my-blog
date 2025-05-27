@@ -109,55 +109,53 @@ export const posts: Post[] = [
     title: "The Art of Minimalism in Digital Design",
     slug: "minimalism-in-digital-design",
     excerpt: "Explore how the principles of minimalism can create more effective, elegant, and user-friendly digital experiences that stand the test of time.",
-    content: `
-    # The Art of Minimalism in Digital Design
+    content: `# The Art of Minimalism in Digital Design
 
-    In an age of information overload and constant digital noise, minimalism stands as a breath of fresh air. This design philosophy, rooted in the principle of "less is more," has become increasingly relevant in our complex digital landscape.
+In an age of information overload and constant digital noise, minimalism stands as a breath of fresh air. This design philosophy, rooted in the principle of "less is more," has become increasingly relevant in our complex digital landscape.
 
-    ## Origins of Minimalist Design
+## Origins of Minimalist Design
 
-    Minimalism as an art movement emerged in the early 20th century, but its principles have found new relevance in digital design. The core tenets of minimalism—simplicity, clarity, and purpose—align perfectly with the goals of effective user experience design.
+Minimalism as an art movement emerged in the early 20th century, but its principles have found new relevance in digital design. The core tenets of minimalism—simplicity, clarity, and purpose—align perfectly with the goals of effective user experience design.
 
-    ## Why Minimalism Works in Digital Design
+## Why Minimalism Works in Digital Design
 
-    ### 1. Improved User Focus
+### 1. Improved User Focus
 
-    By removing unnecessary elements, minimalist design creates clearer paths for users to follow. When a screen is cluttered with too many options, users experience what psychologists call "choice paralysis." Minimalist interfaces reduce cognitive load, allowing users to focus on what truly matters.
+By removing unnecessary elements, minimalist design creates clearer paths for users to follow. When a screen is cluttered with too many options, users experience what psychologists call "choice paralysis." Minimalist interfaces reduce cognitive load, allowing users to focus on what truly matters.
 
-    ### 2. Enhanced Usability
+### 2. Enhanced Usability
 
-    Minimalist designs often feature intuitive navigation, clear hierarchies, and purposeful white space. These elements combine to create interfaces that users can understand and navigate with minimal learning curve.
+Minimalist designs often feature intuitive navigation, clear hierarchies, and purposeful white space. These elements combine to create interfaces that users can understand and navigate with minimal learning curve.
 
-    ### 3. Faster Load Times
+### 3. Faster Load Times
 
-    From a technical perspective, minimalist designs typically require fewer resources, resulting in faster loading pages and smoother performance—critical factors in user retention and satisfaction.
+From a technical perspective, minimalist designs typically require fewer resources, resulting in faster loading pages and smoother performance—critical factors in user retention and satisfaction.
 
-    ## Principles of Minimalist Digital Design
+## Principles of Minimalist Digital Design
 
-    ### Purposeful White Space
+### Purposeful White Space
 
-    White space (or negative space) isn't empty; it's a powerful design element that gives content room to breathe. Proper use of white space improves readability, highlights important elements, and creates a sense of elegance.
+White space (or negative space) isn't empty; it's a powerful design element that gives content room to breathe. Proper use of white space improves readability, highlights important elements, and creates a sense of elegance.
 
-    ### Limited Color Palette
+### Limited Color Palette
 
-    Minimalist designs often employ a restrained color palette, typically with 2-3 primary colors. This constraint forces designers to use color purposefully rather than decoratively, creating stronger visual hierarchies and more cohesive experiences.
+Minimalist designs often employ a restrained color palette, typically with 2-3 primary colors. This constraint forces designers to use color purposefully rather than decoratively, creating stronger visual hierarchies and more cohesive experiences.
 
-    ### Typography as a Central Element
+### Typography as a Central Element
 
-    In the absence of decorative elements, typography takes center stage in minimalist design. Font choice, sizing, and spacing become critical design decisions that shape the entire user experience.
+In the absence of decorative elements, typography takes center stage in minimalist design. Font choice, sizing, and spacing become critical design decisions that shape the entire user experience.
 
-    ## Balancing Minimalism with Functionality
+## Balancing Minimalism with Functionality
 
-    While minimalism advocates for removing the unnecessary, it's crucial to distinguish between decoration and function. A common criticism of minimalist design is that it can sometimes sacrifice usability in pursuit of aesthetic simplicity.
+While minimalism advocates for removing the unnecessary, it's crucial to distinguish between decoration and function. A common criticism of minimalist design is that it can sometimes sacrifice usability in pursuit of aesthetic simplicity.
 
-    The key is to practice "practical minimalism"—removing what's unnecessary while keeping elements that serve a clear purpose, even if they add some visual complexity.
+The key is to practice "practical minimalism"—removing what's unnecessary while keeping elements that serve a clear purpose, even if they add some visual complexity.
 
-    ## Conclusion
+## Conclusion
 
-    Minimalism isn't about making things plain or boring—it's about intentionality and focus. In digital design, this translates to creating experiences that respect users' time and attention, guiding them effortlessly toward their goals.
+Minimalism isn't about making things plain or boring—it's about intentionality and focus. In digital design, this translates to creating experiences that respect users' time and attention, guiding them effortlessly toward their goals.
 
-    As we continue to navigate an increasingly complex digital world, the principles of minimalist design offer a valuable framework for creating interfaces that endure, function beautifully, and provide clarity amidst the noise.
-    `,
+As we continue to navigate an increasingly complex digital world, the principles of minimalist design offer a valuable framework for creating interfaces that endure, function beautifully, and provide clarity amidst the noise.`,
     date: "June 12, 2023",
     readTime: "8 min read",
     image: "https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop",
@@ -175,66 +173,64 @@ export const posts: Post[] = [
     title: "Typography Trends That Will Dominate This Year",
     slug: "typography-trends",
     excerpt: "A deep dive into the typography trends that are shaping digital design this year, from variable fonts to experimental typefaces.",
-    content: `
-    # Typography Trends That Will Dominate This Year
+    content: `# Typography Trends That Will Dominate This Year
 
-    Typography is far more than just selecting a pleasing font. It's a fundamental element of design that communicates personality, sets tone, and greatly impacts user experience. As we move through the year, several typography trends are emerging as dominant forces in digital design.
+Typography is far more than just selecting a pleasing font. It's a fundamental element of design that communicates personality, sets tone, and greatly impacts user experience. As we move through the year, several typography trends are emerging as dominant forces in digital design.
 
-    ## Variable Fonts: Flexibility Meets Performance
+## Variable Fonts: Flexibility Meets Performance
 
-    Variable fonts represent one of the most significant advancements in typography for the digital age. These fonts store a range of variations within a single font file, allowing designers to adjust weight, width, slant, and other attributes without loading multiple font files.
+Variable fonts represent one of the most significant advancements in typography for the digital age. These fonts store a range of variations within a single font file, allowing designers to adjust weight, width, slant, and other attributes without loading multiple font files.
 
-    ### Benefits of Variable Fonts:
-    
-    - **Performance improvements** through reduced file sizes
-    - **Design flexibility** with infinite variations along defined axes
-    - **Responsive typography** that can adapt to different screen sizes and contexts
-    
-    Major type foundries and even Google Fonts now offer variable font options, making this technology accessible to designers of all levels.
+### Benefits of Variable Fonts:
 
-    ## Kinetic Typography
+- **Performance improvements** through reduced file sizes
+- **Design flexibility** with infinite variations along defined axes
+- **Responsive typography** that can adapt to different screen sizes and contexts
 
-    Text in motion—kinetic typography—continues to gain popularity as processing power increases across devices. From subtle hover animations to full-blown typographic videos, moving text captures attention in ways static text cannot.
+Major type foundries and even Google Fonts now offer variable font options, making this technology accessible to designers of all levels.
 
-    We're seeing designers use kinetic type to:
-    
-    - Emphasize key messages
-    - Guide users through interfaces
-    - Add personality to otherwise static pages
-    - Create memorable brand moments
+## Kinetic Typography
 
-    ## Experimental and Custom Typefaces
+Text in motion—kinetic typography—continues to gain popularity as processing power increases across devices. From subtle hover animations to full-blown typographic videos, moving text captures attention in ways static text cannot.
 
-    As brands strive for distinctive identities, we're seeing a surge in custom and experimental typefaces. These bespoke fonts help companies stand out in crowded markets and communicate unique brand attributes.
+We're seeing designers use kinetic type to:
 
-    The rise of variable font technology has also enabled more experimental approaches, as designers can create typefaces with wide ranges of expression within a single font family.
+- Emphasize key messages
+- Guide users through interfaces
+- Add personality to otherwise static pages
+- Create memorable brand moments
 
-    ## Brutalist Typography
+## Experimental and Custom Typefaces
 
-    The brutalist design movement, characterized by raw, unpolished aesthetics, continues to influence typography. Expect to see more designs featuring:
-    
-    - Stark contrasts between type sizes
-    - Unconventional layouts that break traditional grid systems
-    - Monospaced fonts used in unexpected contexts
-    - Intentionally "imperfect" type treatments
+As brands strive for distinctive identities, we're seeing a surge in custom and experimental typefaces. These bespoke fonts help companies stand out in crowded markets and communicate unique brand attributes.
 
-    ## Accessibility-First Typography
+The rise of variable font technology has also enabled more experimental approaches, as designers can create typefaces with wide ranges of expression within a single font family.
 
-    With digital accessibility regulations becoming more stringent worldwide, we're seeing a welcome trend toward typography that prioritizes readability and inclusivity.
+## Brutalist Typography
 
-    This includes:
-    
-    - Higher contrast ratios between text and backgrounds
-    - More generous line heights and letter spacing
-    - Increased font sizes, particularly on mobile
-    - Thoughtful font choices that consider readers with dyslexia and other reading challenges
+The brutalist design movement, characterized by raw, unpolished aesthetics, continues to influence typography. Expect to see more designs featuring:
 
-    ## Conclusion
+- Stark contrasts between type sizes
+- Unconventional layouts that break traditional grid systems
+- Monospaced fonts used in unexpected contexts
+- Intentionally "imperfect" type treatments
 
-    Typography continues to evolve as technology advances and design sensibilities shift. The trends we're seeing this year reflect both technological possibilities and cultural movements toward authenticity, accessibility, and distinctive brand expression.
+## Accessibility-First Typography
 
-    For designers looking to stay current, experimenting with variable fonts and considering the accessibility implications of typographic choices represent valuable starting points. The best typography doesn't just look good—it enhances readability, supports brand identity, and improves overall user experience.
-    `,
+With digital accessibility regulations becoming more stringent worldwide, we're seeing a welcome trend toward typography that prioritizes readability and inclusivity.
+
+This includes:
+
+- Higher contrast ratios between text and backgrounds
+- More generous line heights and letter spacing
+- Increased font sizes, particularly on mobile
+- Thoughtful font choices that consider readers with dyslexia and other reading challenges
+
+## Conclusion
+
+Typography continues to evolve as technology advances and design sensibilities shift. The trends we're seeing this year reflect both technological possibilities and cultural movements toward authenticity, accessibility, and distinctive brand expression.
+
+For designers looking to stay current, experimenting with variable fonts and considering the accessibility implications of typographic choices represent valuable starting points. The best typography doesn't just look good—it enhances readability, supports brand identity, and improves overall user experience.`,
     date: "May 3, 2023",
     readTime: "6 min read",
     image: "https://images.unsplash.com/photo-1569235186275-626cb53b83ce?q=80&w=1378&auto=format&fit=crop",
