@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLoadingStore } from "../store/loading-store";
+import { useLoadingStore, resetPageLoading } from "../store/loading-store";
 import { usePathname, useSearchParams } from "next/navigation";
 
 // This component uses useSearchParams which requires a Suspense boundary
@@ -10,15 +10,33 @@ export default function PageLoadingIndicator() {
   const { isLoading } = useLoadingStore();
   const progressRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousPathRef = useRef<string | null>(null);
   const pathname = usePathname();
   
   // Safely access search params
   const searchParams = useSearchParams();
   const searchParamsString = searchParams ? searchParams.toString() : "";
 
+  // Check if the URL has actually changed
+  const [isRealNavigation, setIsRealNavigation] = useState(true);
+  
+  // Track previous URL to detect same-page navigation
+  useEffect(() => {
+    if (previousPathRef.current === pathname) {
+      setIsRealNavigation(false);
+      // If we detect we're on the same page, reset loading
+      resetPageLoading();
+    } else {
+      setIsRealNavigation(true);
+    }
+    
+    previousPathRef.current = pathname;
+  }, [pathname]);
+
   // Update progress simulation
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading && isRealNavigation) {
       progressRef.current = 20; // Start at 20%
 
       // Simulate progress increasing
@@ -38,23 +56,30 @@ export default function PageLoadingIndicator() {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isLoading, isRealNavigation]);
+
+  // Safety timeout to automatically reset loading after a maximum time
+  useEffect(() => {
+    if (isLoading) {
+      timeoutRef.current = setTimeout(() => {
+        resetPageLoading();
+      }, 8000); // 8 seconds max loading time
+    }
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
   }, [isLoading]);
 
-  // Reset loading state on route change
-  useEffect(() => {
-    // Small delay to finish any animations
-    const timer = setTimeout(() => {
-      useLoadingStore.getState().stopLoading();
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, [pathname, searchParamsString]);
-
   return (
     <AnimatePresence>
-      {isLoading && (
+      {isLoading && isRealNavigation && (
         <>
           {/* Progress bar at top */}
           <motion.div 

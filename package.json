@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "dev:safe": "next dev",
-    "build": "NODE_ENV=production next build --no-lint",
+    "build": "rimraf .next && set NODE_ENV=production&& next build --no-lint",
     "start": "next start",
     "lint": "next lint",
-    "export": "NODE_ENV=production next build --no-lint",
-    "deploy": "NODE_ENV=production next build --no-lint && echo.> out/.nojekyll",
-    "deploy:win": "set NODE_ENV=production&& next build --no-lint && echo.> out/.nojekyll"
+    "export": "set NODE_ENV=production&& next build --no-lint",
+    "deploy": "set NODE_ENV=production&& next build --no-lint && echo.> out/.nojekyll"
   },
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",
@@ -34,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

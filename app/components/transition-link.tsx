@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { startPageLoading } from "../store/loading-store";
+import { useRouter, usePathname } from "next/navigation";
+import { startPageLoading, stopPageLoading } from "../store/loading-store";
 
 interface TransitionLinkProps {
   href: string;
@@ -19,6 +19,28 @@ export default function TransitionLink({
   onClick,
 }: TransitionLinkProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // Clean the href to compare with current pathname
+  const normalizeHref = (url: string): string => {
+    // Remove query parameters and hash
+    let normalized = url.split('?')[0].split('#')[0];
+    // Remove trailing slash if present
+    if (normalized.endsWith('/') && normalized.length > 1) {
+      normalized = normalized.slice(0, -1);
+    }
+    return normalized;
+  };
+  
+  // Check if the link points to the current page
+  const isSamePage = (): boolean => {
+    // Transform both URLs to normalized form for comparison
+    const normalizedHref = normalizeHref(href);
+    const normalizedPathname = normalizeHref(pathname);
+    
+    return normalizedHref === normalizedPathname || 
+           normalizedHref === '' && normalizedPathname === '/';
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Enable default behavior for external links
@@ -26,15 +48,23 @@ export default function TransitionLink({
       return;
     }
     
-    e.preventDefault();
-    
-    // Start loading animation
-    startPageLoading();
-    
     // Call any onClick handlers if provided
     if (onClick) {
       onClick();
     }
+    
+    // If clicking a link to the current page, don't trigger navigation or loading
+    if (isSamePage()) {
+      e.preventDefault();
+      // Scroll to top smoothly instead
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    e.preventDefault();
+    
+    // Start loading animation
+    startPageLoading();
 
     // Add a small delay for any exit animations if needed
     setTimeout(() => {

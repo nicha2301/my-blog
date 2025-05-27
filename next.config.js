@@ -20,17 +20,16 @@ const nextConfig = {
     // Don't fail build on TypeScript errors
     ignoreBuildErrors: true,
   },
-  // Enable static export only for production builds
-  ...(process.env.NODE_ENV === 'production' ? {
-    output: 'export',
-    distDir: 'out',
-  } : {}),
+  // Temporarily disable static export for development
+  // ...(process.env.NODE_ENV === 'production' ? {
+  //   output: 'export',
+  //   distDir: 'out',
+  // } : {}),
   
-  // Ignore errors related to useSearchParams
+  // Keep experimental section but remove unsupported option
   experimental: {
-    // Next.js 15.3.2 doesn't recognize this, but it's okay
-    missingSuspenseForDataFetchingWarning: false
+    // Empty but can be used for future experimental features
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
