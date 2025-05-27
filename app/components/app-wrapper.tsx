@@ -1,15 +1,21 @@
 "use client";
 
-import { Suspense, ReactNode } from "react";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { stopPageLoading } from '../store/loading-store';
 
-interface AppWrapperProps {
-  children: ReactNode;
-}
-
-export default function AppWrapper({ children }: AppWrapperProps) {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading application...</div>}>
-      {children}
-    </Suspense>
-  );
+export default function AppWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  
+  // Ensure loading state is reset when component mounts
+  useEffect(() => {
+    // Wait a short moment to allow any animations to complete
+    const timer = setTimeout(() => {
+      stopPageLoading();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [pathname]);
+  
+  return <>{children}</>;
 } 

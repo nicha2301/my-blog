@@ -497,3 +497,41 @@ p {
     opacity: 1;
   }
 }
+
+/* Custom NProgress styles */
+#nprogress .bar {
+  background: linear-gradient(to right, var(--primary), var(--secondary), var(--primary));
+  height: 3px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--primary), 0 0 5px var(--secondary);
+}
+
+/* Remove spinner */
+#nprogress .spinner {
+  display: none;
+}
+
+/* Add animation for page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms, transform 300ms;
+}

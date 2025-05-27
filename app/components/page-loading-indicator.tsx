@@ -55,14 +55,44 @@ export default function PageLoadingIndicator() {
   return (
     <AnimatePresence>
       {isLoading && (
-        <motion.div 
-          key="loading-bar"
-          className="fixed top-0 left-0 h-[2px] bg-primary z-[100]"
-          initial={{ width: "0%" }}
-          animate={{ width: `${progressRef.current}%` }}
-          exit={{ opacity: 0 }}
-          transition={{ ease: "easeOut" }}
-        />
+        <>
+          {/* Progress bar at top */}
+          <motion.div 
+            key="loading-bar"
+            className="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-primary via-secondary to-primary z-[100]"
+            initial={{ width: "0%", opacity: 0 }}
+            animate={{ width: `${progressRef.current}%`, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ ease: "easeOut" }}
+          />
+          
+          {/* Subtle page overlay */}
+          <motion.div
+            key="loading-overlay"
+            className="fixed inset-0 bg-black/5 dark:bg-white/5 backdrop-blur-[1px] pointer-events-none z-[90]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+          
+          {/* Pulsing dot indicator in corner */}
+          <motion.div
+            key="loading-indicator"
+            className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div 
+              className="h-2 w-2 bg-primary rounded-full"
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}
+            />
+            <span className="text-xs font-medium">Loading</span>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

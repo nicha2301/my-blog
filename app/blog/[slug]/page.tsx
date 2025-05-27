@@ -4,11 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Post, posts, getPostBySlug, getRelatedPosts } from "@/app/lib/data";
 import Image from "next/image";
-import Link from "next/link";
+import TransitionLink from "@/app/components/transition-link";
 import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
-import TransitionLink from "@/app/components/transition-link";
 
 // Function to extract headings from markdown content
 function extractHeadings(content: string) {
@@ -188,9 +187,9 @@ export default function BlogPost() {
               transition={{ duration: 0.5 }}
               className="mb-8"
             >
-              <Link href={`/category/${post.categorySlug}`} className="badge badge-primary mb-6 inline-block">
+              <TransitionLink href={`/category/${post.categorySlug}`} className="badge badge-primary mb-6 inline-block">
                 {post.category}
-              </Link>
+              </TransitionLink>
               <h1 className="text-3xl md:text-5xl font-bold mb-8">{post.title}</h1>
               
               <div className="flex items-center gap-4 mb-8">
@@ -202,9 +201,9 @@ export default function BlogPost() {
                     height={40}
                     className="object-cover rounded-full"
                   />
-                  <Link href={`/author/${post.author.id}`} className="text-sm hover:text-primary transition-colors">
+                  <TransitionLink href={`/author/${post.author.id}`} className="text-sm hover:text-primary transition-colors">
                     {post.author.name}
-                  </Link>
+                  </TransitionLink>
                 </div>
                 <span className="text-sm text-neutral-500 dark:text-neutral-400">{post.date}</span>
                 <span className="text-sm text-neutral-500 dark:text-neutral-400">{post.readTime}</span>
@@ -369,13 +368,13 @@ export default function BlogPost() {
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mt-12 mb-16">
                 {post.tags.map((tag: string, index: number) => (
-                  <Link 
+                  <TransitionLink 
                     key={index}
                     href={`/tag/${tag}`}
                     className="text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-full"
                   >
                     #{tag}
-                  </Link>
+                  </TransitionLink>
                 ))}
               </div>
             </motion.div>
@@ -400,9 +399,9 @@ export default function BlogPost() {
                 <p className="text-neutral-600 dark:text-neutral-400 mb-4">
                   Author of insightful articles on design and technology.
                 </p>
-                <Link href={`/author/${post.author.id}`} className="link">
+                <TransitionLink href={`/author/${post.author.id}`} className="link">
                   View all posts
-                </Link>
+                </TransitionLink>
               </div>
             </div>
           </div>

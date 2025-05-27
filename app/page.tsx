@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import TransitionLink from "@/app/components/transition-link";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState, Suspense } from "react";
 import gsap from "gsap";
@@ -87,9 +87,9 @@ function HomeContent() {
               <div className="animate-line">and thoughtful interactions.</div>
             </h1>
             <div className="mt-10 animate-line">
-              <Link href="/blog" className="btn btn-primary px-8 py-3">
+              <TransitionLink href="/blog" className="btn btn-primary px-8 py-3">
                 Explore Journal
-              </Link>
+              </TransitionLink>
             </div>
           </div>
         </div>
@@ -133,20 +133,20 @@ function HomeContent() {
                   />
                 </div>
                 <div>
-                  <Link href={`/blog/${article.slug}`}>
+                  <TransitionLink href={`/blog/${article.slug}`}>
                     <h3 className="text-2xl font-bold mb-3 hover:text-secondary transition-colors">{article.title}</h3>
-                  </Link>
+                  </TransitionLink>
                   <p className="text-neutral-600 dark:text-neutral-400 mb-6">{article.excerpt}</p>
-                  <Link href={`/blog/${article.slug}`} className="btn btn-secondary">Read Article</Link>
+                  <TransitionLink href={`/blog/${article.slug}`} className="btn btn-secondary">Read Article</TransitionLink>
                 </div>
               </motion.div>
             ))}
           </div>
           
           <div className="mt-16 text-center">
-            <Link href="/blog" className="btn btn-outline">
+            <TransitionLink href="/blog" className="btn btn-outline">
               View All Articles
-            </Link>
+            </TransitionLink>
           </div>
         </div>
       </section>
@@ -176,9 +176,9 @@ function HomeContent() {
               <p className="text-lg mb-8 text-neutral-600 dark:text-neutral-400">
                 Our mission is to explore, celebrate, and share the principles of exceptional design across digital and physical spaces, inspiring both creators and consumers.
               </p>
-              <Link href="/about" className="btn btn-secondary">
+              <TransitionLink href="/about" className="btn btn-secondary">
                 Learn More About Us
-              </Link>
+              </TransitionLink>
             </div>
           </div>
         </div>
@@ -203,9 +203,9 @@ function HomeContent() {
                 <div className="mb-4">{category.icon}</div>
                 <h3 className="text-xl font-bold mb-3">{category.name}</h3>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-6">{category.description}</p>
-                <Link href={`/blog?category=${category.id}`} className="link">
+                <TransitionLink href={`/blog?category=${category.id}`} className="link">
                   Explore Articles
-                </Link>
+                </TransitionLink>
               </motion.div>
             ))}
           </div>

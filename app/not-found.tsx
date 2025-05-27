@@ -1,25 +1,27 @@
 "use client";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import TransitionLink from "@/app/components/transition-link";
+import { motion } from "framer-motion";
 import { Suspense } from 'react';
 
 function NotFoundContent() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center py-20">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
+        className="max-w-md text-center"
       >
-        <h1 className="text-6xl font-bold mb-4">404</h1>
-        <h2 className="text-2xl font-medium mb-6">Page Not Found</h2>
-        <p className="max-w-md mx-auto mb-10 text-neutral-600 dark:text-neutral-400">
-          Sorry, we couldn&apos;t find the page you were looking for. It might have been moved or doesn&apos;t exist.
+        <h1 className="text-7xl font-bold mb-6">404</h1>
+        <h2 className="text-2xl font-medium mb-4">Page Not Found</h2>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+          We couldn't find the page you were looking for. It might have been removed, 
+          renamed, or didn't exist in the first place.
         </p>
-        <Link href="/" className="btn btn-primary">
+        <TransitionLink href="/" className="btn btn-primary">
           Return Home
-        </Link>
+        </TransitionLink>
       </motion.div>
     </div>
   );
