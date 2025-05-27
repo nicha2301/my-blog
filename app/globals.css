@@ -188,12 +188,18 @@ p {
 
 /* Ping animation with slower speed */
 @keyframes ping-slow {
-  0% { transform: scale(1); opacity: 1; }
-  75%, 100% { transform: scale(2); opacity: 0; }
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  75%, 100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
 }
 
 .animate-ping-slow {
-  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: ping-slow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 /* Card and container styles */
@@ -534,4 +540,125 @@ p {
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 300ms, transform 300ms;
+}
+
+/* Ripple button effect - reusable */
+.ripple-btn {
+  position: relative;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid var(--neutral-300);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.ripple-btn::before {
+  content: '';
+  position: absolute;
+  top: var(--y, 50%);
+  left: var(--x, 50%);
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--foreground);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+  z-index: -1;
+  opacity: 0;
+}
+
+.ripple-btn:hover {
+  color: var(--background);
+}
+
+.ripple-btn:hover::before {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+}
+
+.ripple-btn.active {
+  background-color: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+/* For filter buttons (extend ripple-btn) */
+.filter-btn {
+  position: relative;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: 1px solid var(--neutral-300);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+/* Inherit ripple effect by duplicating necessary properties */
+.filter-btn::before {
+  content: '';
+  position: absolute;
+  top: var(--y, 50%);
+  left: var(--x, 50%);
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--foreground);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+  z-index: -1;
+  opacity: 0;
+}
+
+.filter-btn:hover {
+  color: var(--background);
+}
+
+.filter-btn:hover::before {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+}
+
+.filter-btn.active {
+  background-color: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+.dark .filter-btn {
+  border-color: var(--neutral-700);
+}
+
+.dark .filter-btn:hover {
+  color: var(--background);
+}
+
+.dark .filter-btn:hover::before {
+  background: var(--foreground);
+}
+
+.dark .filter-btn.active {
+  background-color: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+/* Custom styling for filter buttons */
+.filter-btn-custom {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  margin: 0.125rem;
+  border-color: var(--neutral-300);
+}
+
+.dark .filter-btn-custom {
+  border-color: var(--neutral-700);
 }

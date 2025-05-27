@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import RippleButton from "../components/ripple-button";
 
 // Wrap the component that uses useSearchParams in Suspense
 function BlogFilterContent() {
@@ -14,7 +15,7 @@ function BlogFilterContent() {
   
   useEffect(() => {
     // Get category from URL on first load if present
-    const categoryParam = searchParams.get('category');
+    const categoryParam = searchParams?.get('category');
     if (categoryParam) {
       setActiveCategory(categoryParam);
     }
@@ -78,17 +79,14 @@ function BlogFilterContent() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
-                <button
+                <RippleButton
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id)}
-                  className={`px-4 py-2 text-sm font-medium transition-all ${
-                    activeCategory === category.id
-                      ? "bg-primary text-white"
-                      : "border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  }`}
+                  active={activeCategory === category.id}
+                  className="filter-btn-custom"
                 >
                   {category.name}
-                </button>
+                </RippleButton>
               ))}
             </div>
             <div className="w-full md:w-auto">
@@ -102,7 +100,7 @@ function BlogFilterContent() {
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                  className="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

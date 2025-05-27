@@ -125,7 +125,7 @@ function HomeContent() {
                 viewport={{ once: true }}
               >
                 <div className="img-zoom relative aspect-[4/3] overflow-hidden mb-6">
-                  <Image
+          <Image
                     src={article.image}
                     alt={article.title}
                     fill
@@ -137,7 +137,7 @@ function HomeContent() {
                     <h3 className="text-2xl font-bold mb-3 hover:text-secondary transition-colors">{article.title}</h3>
                   </TransitionLink>
                   <p className="text-neutral-600 dark:text-neutral-400 mb-6">{article.excerpt}</p>
-                  <TransitionLink href={`/blog/${article.slug}`} className="btn btn-secondary">Read Article</TransitionLink>
+                  <TransitionLink href={`/blog/${article.slug}`} className="btn btn-primary">Read Article</TransitionLink>
                 </div>
               </motion.div>
             ))}
@@ -158,7 +158,7 @@ function HomeContent() {
             <div className="relative h-[500px]">
               <div className="absolute w-64 h-64 bg-primary/10 rounded-full blur-3xl top-0 left-0 z-0" />
               <div className="relative z-10 h-full">
-                <Image
+          <Image
                   src="https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?q=80&w=1904&auto=format&fit=crop"
                   alt="About Minimal Journal"
                   fill
@@ -176,7 +176,7 @@ function HomeContent() {
               <p className="text-lg mb-8 text-neutral-600 dark:text-neutral-400">
                 Our mission is to explore, celebrate, and share the principles of exceptional design across digital and physical spaces, inspiring both creators and consumers.
               </p>
-              <TransitionLink href="/about" className="btn btn-secondary">
+              <TransitionLink href="/about" className="btn btn-primary">
                 Learn More About Us
               </TransitionLink>
             </div>
@@ -233,7 +233,7 @@ function HomeContent() {
               </button>
             </form>
           </div>
-        </div>
+    </div>
       </section>
     </>
   );

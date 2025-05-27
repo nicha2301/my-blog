@@ -131,7 +131,7 @@ function Header() {
       <header 
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
           scrolled 
-            ? "py-4 bg-background/90 backdrop-blur-lg border-b border-neutral-200 dark:border-neutral-800" 
+            ? "py-4 bg-background/75 backdrop-blur-lg border-b border-neutral-200 dark:border-neutral-800" 
             : "py-6 bg-transparent"
         }`}
       >
