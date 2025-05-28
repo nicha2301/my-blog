@@ -52,6 +52,9 @@ export default function TransitionLink({
     if (onClick) {
       onClick();
     }
+
+    // Ensure body overflow is reset when navigating
+    document.body.style.overflow = '';
     
     // If clicking a link to the current page, don't trigger navigation or loading
     if (isSamePage()) {
