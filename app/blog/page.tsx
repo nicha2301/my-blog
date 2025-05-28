@@ -1,18 +1,53 @@
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import RippleButton from "../components/ripple-button";
+import { getAllPosts, getAllCategories } from "../lib/sanity/api";
+import { Post } from "../lib/data";
+import TransitionLink from "../components/transition-link";
+import { urlFor } from "../lib/sanity/client";
+import { formatDate } from "../lib/utils";
 
 // Wrap the component that uses useSearchParams in Suspense
 function BlogFilterContent() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [posts, setPosts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([
+    { id: "all", name: "All Categories" },
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const fetchedPosts = await getAllPosts();
+        setPosts(fetchedPosts);
+        
+        const fetchedCategories = await getAllCategories();
+        setCategories([
+          { id: "all", name: "All Categories" },
+          ...fetchedCategories.map(category => ({
+            id: category.slug,
+            name: category.title
+          }))
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
+
   useEffect(() => {
     // Get category from URL on first load if present
     const categoryParam = searchParams?.get('category');
@@ -23,21 +58,32 @@ function BlogFilterContent() {
 
   // Filter posts by category and search query
   const filteredPosts = posts.filter(post => {
-    const matchesCategory = activeCategory === "all" || post.category.toLowerCase() === activeCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === "all" || post.categorySlug === activeCategory;
+    const matchesSearch = searchQuery === "" || 
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
+  const featuredPost = posts.length > 0 ? posts[0] : null;
+
   // Handle category change
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
   };
 
   // Handle search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -119,51 +165,61 @@ function BlogFilterContent() {
       </section>
 
       {/* Featured Post */}
-      {activeCategory === "all" && !searchQuery && (
-        <section className="py-16">
+      {featuredPost && activeCategory === "all" && searchQuery === "" && (
+        <section className="py-12">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <span className="badge badge-primary mb-4">Featured</span>
-                <h2 className="text-2xl font-bold mb-4">The Art of Minimalism in Digital Design</h2>
-                <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                  Explore how the principles of minimalism can create more effective, elegant, and user-friendly digital experiences that stand the test of time.
-                </p>
-                <div className="flex flex-wrap gap-6 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1522&auto=format&fit=crop"
-                      alt="Alex Morgan"
-                      width={32}
-                      height={32}
-                      className="object-cover"
-                    />
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400">Alex Morgan</span>
+            <div className="grid md:grid-cols-5 gap-8">
+              <div className="md:col-span-3 flex flex-col justify-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <span className="badge badge-primary mb-4">Featured</span>
+                  <h2 className="text-3xl md:text-5xl font-bold mb-6">{featuredPost.title}</h2>
+                  <p className="text-lg mb-6 text-neutral-600 dark:text-neutral-400">
+                    {featuredPost.excerpt}
+                  </p>
+                  <div className="flex items-center gap-6 mb-6">
+                    <div className="flex items-center gap-2">
+                      {featuredPost.author.avatar && (
+                        <Image
+                          src={featuredPost.author.avatar}
+                          alt={featuredPost.author.name}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                      )}
+                      <span className="text-sm">{featuredPost.author.name}</span>
+                    </div>
+                    <span className="text-sm text-neutral-500">
+                      {formatDate(featuredPost.date)}
+                    </span>
                   </div>
-                  <div className="text-sm text-neutral-500">June 12, 2023</div>
-                  <div className="text-sm text-neutral-500">8 min read</div>
-                </div>
-                <Link href="/blog/minimalism-in-digital-design" className="btn btn-primary">
-                  Read Article
-                </Link>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="relative aspect-[4/3] overflow-hidden"
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop"
-                  alt="Minimalism in Digital Design"
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
+                  <TransitionLink
+                    href={`/blog/${featuredPost.slug.current || featuredPost.slug}`}
+                    className="btn btn-primary"
+                  >
+                    Read Article
+                  </TransitionLink>
+                </motion.div>
+              </div>
+              <div className="md:col-span-2">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="relative aspect-[4/3] overflow-hidden"
+                >
+                  <Image
+                    src={featuredPost.image}
+                    alt={featuredPost.title}
+                    fill
+                    className="object-cover"
+                  />
+                </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -176,7 +232,7 @@ function BlogFilterContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredPosts.map((post, index) => (
                 <motion.article
-                  key={post.id}
+                  key={post._id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -197,47 +253,48 @@ function BlogFilterContent() {
                       <span className="badge badge-primary">
                         {post.category}
                       </span>
-                      <span className="text-sm text-neutral-500">{post.date}</span>
+                      <span className="text-sm text-neutral-500">
+                        {formatDate(post.date)}
+                      </span>
                     </div>
-                    <Link href={`/blog/${post.slug}`}>
+                    <TransitionLink href={`/blog/${post.slug.current || post.slug}`}>
                       <h3 className="text-xl font-bold mb-3 hover:text-secondary transition-colors">{post.title}</h3>
-                    </Link>
+                    </TransitionLink>
                     <p className="text-neutral-600 dark:text-neutral-400 mb-4">
                       {post.excerpt}
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Image
-                          src={post.author.avatar}
-                          alt={post.author.name}
-                          width={24}
-                          height={24}
-                          className="object-cover"
-                        />
+                        {post.author.avatar && (
+                          <Image
+                            src={post.author.avatar}
+                            alt={post.author.name}
+                            width={24}
+                            height={24}
+                            className="object-cover rounded-full"
+                          />
+                        )}
                         <span className="text-sm text-neutral-600 dark:text-neutral-400">{post.author.name}</span>
                       </div>
-                      <Link href={`/blog/${post.slug}`} className="link text-sm">
+                      <TransitionLink href={`/blog/${post.slug.current || post.slug}`} className="link text-sm">
                         Read
-                      </Link>
+                      </TransitionLink>
                     </div>
                   </div>
                 </motion.article>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <h3 className="text-2xl font-bold mb-4">No articles found</h3>
-              <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-                We couldn&apos;t find any articles matching your current filters. Try adjusting your search or browse all articles.
-              </p>
-              <button 
+            <div className="text-center py-20">
+              <h3 className="text-xl mb-4">No posts found for this category</h3>
+              <button
                 onClick={() => {
                   setActiveCategory("all");
                   setSearchQuery("");
                 }}
                 className="btn btn-primary"
               >
-                View All Articles
+                View All Posts
               </button>
             </div>
           )}
