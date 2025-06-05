@@ -2,12 +2,18 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { posts } from "@/app/lib/data";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import TransitionLink from "@/app/components/transition-link";
-import type { Post } from "@/app/lib/data";
 import { Suspense } from "react";
+import { getAllPosts } from "@/app/lib/sanity/api";
+import type { Post } from "@/app/lib/data";
+import { formatDate } from "@/app/lib/utils";
+import { urlFor } from "@/app/lib/sanity/client";
+
+// Hình mặc định
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
 
 // SearchContent component with useSearchParams
 function SearchContent() {
@@ -18,31 +24,117 @@ function SearchContent() {
   const [searchQuery, setSearchQuery] = useState(query);
   const [searchResults, setSearchResults] = useState<Post[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Handle search when query changes
+  // Hàm helper để xử lý URL hình ảnh
+  const getImageUrl = (imageSource: any): string => {
+    if (!imageSource) return DEFAULT_POST_IMAGE;
+    
+    // Nếu là URL đầy đủ, trả về nguyên vẹn
+    if (typeof imageSource === 'string' && imageSource.startsWith('http')) {
+      return imageSource;
+    }
+    
+    // Nếu là đối tượng tham chiếu Sanity, sử dụng urlFor
+    try {
+      return urlFor(imageSource).url();
+    } catch (error) {
+      console.error('Error generating image URL:', error);
+      return DEFAULT_POST_IMAGE;
+    }
+  };
+
+  // Lấy tất cả bài viết từ Sanity khi component mount
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const postsData = await getAllPosts();
+        
+        // Xử lý bài viết để đảm bảo các trường dữ liệu
+        const formattedPosts = postsData.map(post => {
+          // Xử lý hình ảnh bài viết
+          let imageUrl = DEFAULT_POST_IMAGE;
+          if (post.mainImage) {
+            imageUrl = getImageUrl(post.mainImage);
+          } else if (post.image) {
+            imageUrl = getImageUrl(post.image);
+          }
+          
+          // Xử lý avatar của tác giả
+          let authorAvatar = DEFAULT_AVATAR;
+          if (post.author && post.author.image) {
+            authorAvatar = getImageUrl(post.author.image);
+          } else if (post.author && post.author.avatar) {
+            authorAvatar = getImageUrl(post.author.avatar);
+          }
+          
+          // Trả về đối tượng Post đã được định dạng
+          return {
+            id: post._id || "",
+            title: post.title || "Untitled",
+            slug: typeof post.slug === 'string' ? post.slug : (post.slug?.current || ""),
+            excerpt: post.excerpt || "No excerpt available",
+            content: post.content || "",
+            date: post.date || new Date().toISOString(),
+            readTime: post.readTime || "3 min read",
+            image: imageUrl,
+            category: post.category || "Uncategorized",
+            categorySlug: post.categorySlug || "uncategorized",
+            author: {
+              id: post.author?.id || "",
+              name: post.author?.name || "Unknown Author",
+              avatar: authorAvatar
+            },
+            tags: post.tags || []
+          };
+        });
+        
+        setAllPosts(formattedPosts);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setAllPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchPosts();
+  }, []);
+
+  // Xử lý tìm kiếm khi query thay đổi
   useEffect(() => {
     setSearchQuery(query);
     
-    if (query) {
+    if (query && !isLoading) {
       setIsSearching(true);
       
-      // Simulate search delay
+      // Tìm kiếm trong danh sách bài viết đã lấy
       setTimeout(() => {
-        const results = posts.filter(post => {
-          const searchableText = `${post.title} ${post.excerpt} ${post.content} ${post.category} ${post.author.name}`.toLowerCase();
-          return searchableText.includes(query.toLowerCase());
+        const lowercaseQuery = query.toLowerCase();
+        
+        const results = allPosts.filter(post => {
+          const title = post.title?.toLowerCase() || '';
+          const excerpt = post.excerpt?.toLowerCase() || '';
+          const content = post.content?.toLowerCase() || '';
+          const category = post.category?.toLowerCase() || '';
+          const authorName = post.author?.name?.toLowerCase() || '';
+          const tags = post.tags?.map(tag => tag.toLowerCase()).join(' ') || '';
+          
+          const searchableText = `${title} ${excerpt} ${content} ${category} ${authorName} ${tags}`;
+          return searchableText.includes(lowercaseQuery);
         });
         
         setSearchResults(results);
         setIsSearching(false);
-      }, 500);
+      }, 300);
     } else {
       setSearchResults([]);
       setIsSearching(false);
     }
-  }, [query]);
+  }, [query, allPosts, isLoading]);
 
-  // Handle search form submission
+  // Xử lý gửi form tìm kiếm
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -70,7 +162,7 @@ function SearchContent() {
                 />
                 <button 
                   type="submit" 
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral-500"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -86,7 +178,17 @@ function SearchContent() {
       {/* Search Results */}
       <section className="py-8 pb-24">
         <div className="container mx-auto px-4">
-          {query ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                  <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-r-2 border-l-2 border-neutral-300 dark:border-neutral-700 animate-pulse"></div>
+                </div>
+                <p className="mt-6 text-neutral-600 dark:text-neutral-400 font-medium">Loading content...</p>
+              </div>
+            </div>
+          ) : query ? (
             <div className="max-w-4xl mx-auto">
               <h2 className="text-2xl font-bold mb-8">
                 {isSearching 
@@ -107,7 +209,7 @@ function SearchContent() {
                     <div className="space-y-12">
                       {searchResults.map((post, index) => (
                         <motion.article
-                          key={post.id}
+                          key={post.id || index}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -129,7 +231,7 @@ function SearchContent() {
                               <TransitionLink href={`/category/${post.categorySlug}`} className="badge badge-primary">
                                 {post.category}
                               </TransitionLink>
-                              <span className="text-sm text-neutral-500">{post.date}</span>
+                              <span className="text-sm text-neutral-500">{formatDate(post.date)}</span>
                             </div>
                             <TransitionLink href={`/blog/${post.slug}`}>
                               <h3 className="text-xl font-bold mb-2 hover:text-primary transition-colors">{post.title}</h3>
