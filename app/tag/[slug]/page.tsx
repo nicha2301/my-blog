@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getPostsByTag } from "@/app/lib/data";
+import { getPostsByTag } from "@/app/lib/sanity/api";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
@@ -16,15 +16,25 @@ export default function TagPage() {
   const tagName = slug ? decodeURIComponent(slug as string) : "";
 
   useEffect(() => {
-    if (slug) {
-      const tagPosts = getPostsByTag(tagName);
-      setPosts(tagPosts);
-      
-      // Simulate loading
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
+    async function fetchData() {
+      if (slug) {
+        try {
+          setLoading(true);
+          const tagPosts = await getPostsByTag(tagName);
+          setPosts(tagPosts);
+        } catch (error) {
+          console.error("Error fetching posts by tag:", error);
+          setPosts([]);
+        } finally {
+          // Simulate loading
+          setTimeout(() => {
+            setLoading(false);
+          }, 500);
+        }
+      }
     }
+    
+    fetchData();
   }, [slug, tagName]);
 
   if (loading) {

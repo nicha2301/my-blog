@@ -6,11 +6,12 @@ const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2023-03-25';
 // Token should be stored in environment variables
 const token = process.env.SANITY_API_TOKEN;
+
 export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: process.env.NODE_ENV === 'production',
+  useCdn: false,
   token: token,
 });
 
