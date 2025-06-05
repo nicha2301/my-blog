@@ -1,10 +1,39 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { categories } from "@/app/lib/data";
 import TransitionLink from "@/app/components/transition-link";
+import { getAllCategories } from "@/app/lib/sanity/api";
+import type { Category } from "@/app/lib/data";
 
 export default function Categories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const categoriesData = await getAllCategories();
+        
+        // Chuyển đổi dữ liệu từ Sanity sang định dạng Category trong ứng dụng
+        const formattedCategories = categoriesData.map(category => ({
+          id: category._id,
+          name: category.title,
+          description: category.description || "Các bài viết về chủ đề này.",
+          slug: category.slug
+        }));
+        
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchCategories();
+  }, []);
+
   return (
     <>
       {/* Hero Section */}
@@ -34,31 +63,47 @@ export default function Categories() {
       {/* Categories Grid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {categories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="card hover:shadow-lg transition-all"
-              >
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold mb-4">{category.name}</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                    {category.description}
-                  </p>
-                  <TransitionLink
-                    href={`/category/${category.id}`}
-                    className="link text-primary"
-                  >
-                    Browse {category.name} articles
-                  </TransitionLink>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="relative">
+                <div className="h-16 w-16 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+                <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-r-2 border-l-2 border-neutral-300 dark:border-neutral-700 animate-pulse"></div>
+              </div>
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {categories.map((category, index) => (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="card hover:shadow-lg transition-all"
+                >
+                  <div className="p-8">
+                    <h3 className="text-2xl font-bold mb-4">{category.name}</h3>
+                    <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+                      {category.description}
+                    </p>
+                    <TransitionLink
+                      href={`/category/${category.slug}`}
+                      className="link text-primary"
+                    >
+                      Browse {category.name} articles
+                    </TransitionLink>
+                  </div>
+                </motion.div>
+              ))
+              }
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-lg text-neutral-600 dark:text-neutral-400">
+                No categories found. Please check back later.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
