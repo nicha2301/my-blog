@@ -8,29 +8,91 @@ import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
 import TransitionLink from "@/app/components/transition-link";
 import type { Post, Author } from "@/app/lib/data";
+import { urlFor } from "@/app/lib/sanity/client";
+
+// Hình ảnh mặc định
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
 
 export default function AuthorPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string; // Sử dụng optional chaining và type assertion
   const [posts, setPosts] = useState<Post[]>([]);
   const [author, setAuthor] = useState<Author | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Hàm helper để xử lý URL hình ảnh
+  const getImageUrl = (imageSource: any): string => {
+    if (!imageSource) return DEFAULT_AVATAR;
+    
+    // Nếu là URL đầy đủ, trả về nguyên vẹn
+    if (typeof imageSource === 'string' && imageSource.startsWith('http')) {
+      return imageSource;
+    }
+    
+    // Nếu là đối tượng tham chiếu Sanity, sử dụng urlFor
+    try {
+      return urlFor(imageSource).url();
+    } catch (error) {
+      console.error('Error generating image URL:', error);
+      return DEFAULT_AVATAR;
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
       if (id) {
         try {
-          const authorData = await getAuthorById(id as string);
+          const authorData = await getAuthorById(id);
           if (!authorData) {
             notFound();
           }
           
+          // Đảm bảo authorData.social tồn tại
           if (!authorData.social) {
             authorData.social = {};
           }
           
+          // Xử lý avatar từ Sanity
+          if (authorData.image) {
+            authorData.avatar = getImageUrl(authorData.image);
+          } else if (!authorData.avatar || authorData.avatar === '') {
+            authorData.avatar = DEFAULT_AVATAR;
+          }
+          
           setAuthor(authorData);
-          const authorPosts = await getPostsByAuthor(id as string);
-          setPosts(authorPosts);
+          
+          try {
+            const authorPosts = await getPostsByAuthor(id);
+            // Đảm bảo mỗi bài viết đều có hình ảnh
+            const postsWithDefaultImages = authorPosts.map(post => {
+              // Xử lý hình ảnh bài viết
+              let imageUrl = DEFAULT_POST_IMAGE;
+              if (post.mainImage) {
+                imageUrl = getImageUrl(post.mainImage);
+              } else if (post.image) {
+                imageUrl = getImageUrl(post.image);
+              }
+              
+              // Xử lý slug
+              let postSlug = '';
+              if (typeof post.slug === 'string') {
+                postSlug = post.slug;
+              } else if (post.slug && post.slug.current) {
+                postSlug = post.slug.current;
+              }
+              
+              return {
+                ...post,
+                image: imageUrl,
+                slug: postSlug
+              };
+            });
+            setPosts(postsWithDefaultImages);
+          } catch (error) {
+            console.error("Error fetching author posts:", error);
+            setPosts([]);
+          }
         } catch (error) {
           console.error("Error fetching author data:", error);
         } finally {
@@ -63,6 +125,8 @@ export default function AuthorPage() {
   }
 
   const social = author.social || {};
+  // Đảm bảo một lần nữa avatar không rỗng khi render
+  const avatarSrc = author.avatar && author.avatar !== '' ? author.avatar : DEFAULT_AVATAR;
 
   return (
     <>
@@ -78,8 +142,8 @@ export default function AuthorPage() {
             >
               <div className="relative w-40 h-40">
                 <Image
-                  src={author.avatar}
-                  alt={author.name}
+                  src={avatarSrc}
+                  alt={author.name || 'Author'}
                   fill
                   className="object-cover rounded-full"
                   priority
@@ -88,9 +152,9 @@ export default function AuthorPage() {
               
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center md:text-left">{author.name}</h1>
-                <p className="text-primary font-medium mb-4 text-center md:text-left">{author.role}</p>
+                <p className="text-primary font-medium mb-4 text-center md:text-left">{author.role || 'Writer'}</p>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-6 text-center md:text-left">
-                  {author.bio}
+                  {author.bio || 'No biography available.'}
                 </p>
                 
                 <div className="flex gap-4 justify-center md:justify-start">
@@ -137,43 +201,45 @@ export default function AuthorPage() {
           
           {posts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {posts.map((post, index) => (
-                <motion.article
-                  key={post._id || post.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="border-t border-neutral-200 dark:border-neutral-800 pt-6"
-                >
-                  <div className="img-zoom h-60 relative overflow-hidden mb-4">
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <TransitionLink href={`/category/${post.categorySlug}`} className="badge badge-primary">
-                        {post.category}
-                      </TransitionLink>
-                      <span className="text-sm text-neutral-500">{post.date}</span>
+              {posts.map((post, index) => {
+                return (
+                  <motion.article
+                    key={post._id || post.id || index}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="border-t border-neutral-200 dark:border-neutral-800 pt-6"
+                  >
+                    <div className="img-zoom h-60 relative overflow-hidden mb-4">
+                      <Image
+                        src={post.image}
+                        alt={post.title || 'Blog post'}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover"
+                      />
                     </div>
-                    <TransitionLink href={`/blog/${post.slug.current || post.slug}`}>
-                      <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">{post.title}</h3>
-                    </TransitionLink>
-                    <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-                      {post.excerpt}
-                    </p>
-                    <TransitionLink href={`/blog/${post.slug.current || post.slug}`} className="link text-sm">
-                      Read article
-                    </TransitionLink>
-                  </div>
-                </motion.article>
-              ))}
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <TransitionLink href={`/category/${post.categorySlug || 'uncategorized'}`} className="badge badge-primary">
+                          {post.category || 'Uncategorized'}
+                        </TransitionLink>
+                        <span className="text-sm text-neutral-500">{post.date || 'No date'}</span>
+                      </div>
+                      <TransitionLink href={`/blog/${post.slug}`}>
+                        <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">{post.title || 'Untitled Post'}</h3>
+                      </TransitionLink>
+                      <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+                        {post.excerpt || 'No excerpt available.'}
+                      </p>
+                      <TransitionLink href={`/blog/${post.slug}`} className="link text-sm">
+                        Read article
+                      </TransitionLink>
+                    </div>
+                  </motion.article>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-16">

@@ -7,8 +7,12 @@ import Image from "next/image";
 import TransitionLink from "@/app/components/transition-link";
 import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
-import Markdown from "react-markdown";
 import { formatDate } from "@/app/lib/utils";
+import { urlFor } from "@/app/lib/sanity/client";
+
+// Hình ảnh mặc định
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
 
 // Function to extract headings from markdown content
 function extractHeadings(content: string) {
@@ -28,8 +32,49 @@ function extractHeadings(content: string) {
   return headings;
 }
 
+// Hàm đơn giản để chuyển đổi Markdown sang HTML
+function simpleMarkdownToHtml(markdown: string): string {
+  if (!markdown) return "";
+  
+  let html = markdown
+    // Chuyển đổi heading
+    .replace(/^### (.*$)/gm, '<h3 id="$1">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 id="$1">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 id="$1">$1</h1>')
+    
+    // Chuyển đổi đoạn văn
+    .replace(/^\s*(\n)?(.+)/gm, function(m) {
+      return /^<(\/)?(h1|h2|h3|ul|ol|li|blockquote|pre|img)/.test(m) ? m : '<p>' + m + '</p>';
+    })
+    
+    // Chuyển đổi in đậm và in nghiêng
+    .replace(/\*\*(.*)\*\*/gm, '<strong>$1</strong>')
+    .replace(/\*(.*)\*/gm, '<em>$1</em>')
+    
+    // Chuyển đổi danh sách
+    .replace(/^\s*\n\*/gm, '<ul>\n*')
+    .replace(/^(\*)(.*)/gm, '<li>$2</li>')
+    .replace(/<\/ul>\s*\n/gm, '</ul>\n')
+    
+    // Chuyển đổi blockquote
+    .replace(/^\> (.*$)/gm, '<blockquote>$1</blockquote>')
+    
+    // Chuyển đổi code
+    .replace(/`(.*?)`/gm, '<code>$1</code>')
+    .replace(/```([\s\S]*?)```/gm, '<pre><code>$1</code></pre>')
+    
+    // Chuyển đổi liên kết
+    .replace(/\[([^\[]+)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  // Loại bỏ các thẻ p lồng nhau
+  html = html.replace(/<p><\/p>/g, '');
+  
+  return html;
+}
+
 export default function BlogPost() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params?.slug as string; // Sử dụng optional chaining và type assertion
   const [post, setPost] = useState<any>(null);
   const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,13 +86,54 @@ export default function BlogPost() {
   // Force observer setup after content fully renders
   const [contentRendered, setContentRendered] = useState(false);
   
+  // Hàm helper để xử lý URL hình ảnh
+  const getImageUrl = (imageSource: any): string => {
+    if (!imageSource) return DEFAULT_POST_IMAGE;
+    
+    // Nếu là URL đầy đủ, trả về nguyên vẹn
+    if (typeof imageSource === 'string' && imageSource.startsWith('http')) {
+      return imageSource;
+    }
+    
+    // Nếu là đối tượng tham chiếu Sanity, sử dụng urlFor
+    try {
+      return urlFor(imageSource).url();
+    } catch (error) {
+      console.error('Error generating image URL:', error);
+      return DEFAULT_POST_IMAGE;
+    }
+  };
+  
   useEffect(() => {
     async function fetchPost() {
       if (slug) {
         try {
-          const currentPost = await getPostBySlug(slug as string);
+          const currentPost = await getPostBySlug(slug);
           if (!currentPost) {
             notFound();
+          }
+          
+          // Xử lý ảnh bài viết
+          if (currentPost.mainImage) {
+            currentPost.image = getImageUrl(currentPost.mainImage);
+          } else if (!currentPost.image) {
+            currentPost.image = DEFAULT_POST_IMAGE;
+          }
+          
+          // Đảm bảo thông tin tác giả và avatar tồn tại
+          if (!currentPost.author) {
+            currentPost.author = {
+              id: 'unknown',
+              name: 'Unknown Author',
+              avatar: DEFAULT_AVATAR
+            };
+          } else {
+            // Xử lý avatar tác giả
+            if (currentPost.author.image) {
+              currentPost.author.avatar = getImageUrl(currentPost.author.image);
+            } else if (!currentPost.author.avatar || currentPost.author.avatar === '') {
+              currentPost.author.avatar = DEFAULT_AVATAR;
+            }
           }
           
           setPost(currentPost);
@@ -56,7 +142,17 @@ export default function BlogPost() {
           if (currentPost._id && currentPost.categorySlug) {
             try {
               const related = await getRelatedPosts(currentPost._id, currentPost.categorySlug, 3);
-              setRelatedPosts(related);
+              
+              // Đảm bảo mỗi bài viết liên quan đều có hình ảnh và slug hợp lệ
+              const relatedWithDefaults = related.map((relatedPost: any) => ({
+                ...relatedPost,
+                image: relatedPost.mainImage ? getImageUrl(relatedPost.mainImage) : 
+                       (relatedPost.image ? getImageUrl(relatedPost.image) : DEFAULT_POST_IMAGE),
+                slug: typeof relatedPost.slug === 'string' ? relatedPost.slug : 
+                      (relatedPost.slug && relatedPost.slug.current ? relatedPost.slug.current : '')
+              }));
+              
+              setRelatedPosts(relatedWithDefaults);
             } catch (error) {
               console.error("Error fetching related posts:", error);
               setRelatedPosts([]);
@@ -138,29 +234,13 @@ export default function BlogPost() {
 
   // Format post date
   const formattedDate = formatDate(post.date);
-
-  // Custom renderer for markdown components
-  const components = {
-    h1: ({ node, ...props }: any) => {
-      const id = props.children?.toString().toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, "-");
-      return <h1 id={id} className="text-3xl font-bold mt-10 mb-6 text-neutral-900 dark:text-neutral-400" {...props} />;
-    },
-    h2: ({ node, ...props }: any) => {
-      const id = props.children?.toString().toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, "-");
-      return <h2 id={id} className="text-2xl font-bold mt-8 mb-4 text-neutral-800 dark:text-neutral-400" {...props} />;
-    },
-    h3: ({ node, ...props }: any) => {
-      const id = props.children?.toString().toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, "-");
-      return <h3 id={id} className="text-xl font-bold mt-6 mb-3 text-neutral-700 dark:text-neutral-400" {...props} />;
-    },
-    p: ({ node, ...props }: any) => <p className="mb-6 leading-relaxed" {...props} />,
-    ul: ({ node, ...props }: any) => <ul className="list-disc pl-6 mb-6 space-y-2" {...props} />,
-    ol: ({ node, ...props }: any) => <ol className="list-decimal pl-6 mb-6 space-y-2" {...props} />,
-    li: ({ node, ...props }: any) => <li className="mb-1" {...props} />,
-    blockquote: ({ node, ...props }: any) => <blockquote className="border-l-4 border-primary pl-4 py-2 mb-6 italic bg-neutral-50 dark:bg-neutral-800/50" {...props} />,
-    code: ({ node, inline, ...props }: any) => <code className="bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono text-sm" {...props} />,
-    pre: ({ node, ...props }: any) => <pre className="bg-neutral-800 text-neutral-200 p-4 rounded-md overflow-x-auto mb-6" {...props} />,
-  };
+  
+  // Đảm bảo lại một lần nữa các giá trị không bị rỗng khi render
+  const postImage = post.image && post.image !== '' ? post.image : DEFAULT_POST_IMAGE;
+  const authorAvatar = post.author?.avatar && post.author.avatar !== '' ? post.author.avatar : DEFAULT_AVATAR;
+  
+  // Chuyển đổi nội dung Markdown thành HTML
+  const contentHtml = simpleMarkdownToHtml(post.content || '');
 
   return (
     <>
@@ -183,15 +263,14 @@ export default function BlogPost() {
               
               <div className="flex flex-wrap items-center gap-4 mb-8">
                 <div className="flex items-center gap-3">
-                  {post.author?.avatar && (
-                    <Image
-                      src={post.author.avatar}
-                      alt={post.author.name || 'Author'}
-                      width={40}
-                      height={40}
-                      className="object-cover rounded-full"
-                    />
-                  )}
+                  {/* Luôn hiển thị avatar, sử dụng giá trị mặc định nếu cần */}
+                  <Image
+                    src={authorAvatar}
+                    alt={post.author.name || 'Author'}
+                    width={40}
+                    height={40}
+                    className="object-cover rounded-full"
+                  />
                   {post.author?.id && (
                     <TransitionLink href={`/author/${post.author.id}`} className="text-sm hover:text-primary transition-colors">
                       {post.author.name || 'Author'}
@@ -205,52 +284,50 @@ export default function BlogPost() {
               </div>
             </motion.div>
             
-            {/* Featured image */}
-            {post.image && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mb-12"
-              >
-                <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  
-                  <div 
-                    className="absolute inset-0 opacity-10 z-[1] mix-blend-soft-light"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
-                      backgroundSize: '12px 12px'
-                    }}
-                  ></div>
-                  
-                  {/* Category badge */}
-                  {post.category && (
-                    <div className="absolute top-4 left-4 z-[2]">
-                      <span className="badge badge-primary py-2 px-4 text-sm shadow-md">
-                        {post.category}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Reading time indicator */}
-                  {post.readTime && (
-                    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-1.5 backdrop-blur-sm z-[2]">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>{post.readTime}</span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
+            {/* Featured image - luôn hiển thị với giá trị mặc định nếu cần */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mb-12"
+            >
+              <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
+                <Image
+                  src={postImage}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                
+                <div 
+                  className="absolute inset-0 opacity-10 z-[1] mix-blend-soft-light"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
+                    backgroundSize: '12px 12px'
+                  }}
+                ></div>
+                
+                {/* Category badge */}
+                {post.category && (
+                  <div className="absolute top-4 left-4 z-[2]">
+                    <span className="badge badge-primary py-2 px-4 text-sm shadow-md">
+                      {post.category}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Reading time indicator */}
+                {post.readTime && (
+                  <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-1.5 backdrop-blur-sm z-[2]">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{post.readTime}</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -332,14 +409,9 @@ export default function BlogPost() {
               <div
                 ref={contentRef} 
                 className="markdown-content prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24"
+                dangerouslySetInnerHTML={{ __html: contentHtml }}
               >
-                {post.content ? (
-                  <Markdown components={components}>
-                    {post.content}
-                  </Markdown>
-                ) : (
-                  <p className="text-neutral-600 dark:text-neutral-400">This post has no content.</p>
-                )}
+                {/* Content is inserted via dangerouslySetInnerHTML */}
               </div>
               
               {/* Tags */}
@@ -367,15 +439,14 @@ export default function BlogPost() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-                {post.author.avatar && (
-                  <Image
-                    src={post.author.avatar}
-                    alt={post.author.name || 'Author'}
-                    width={100}
-                    height={100}
-                    className="object-cover rounded-full"
-                  />
-                )}
+                {/* Luôn hiển thị avatar với giá trị mặc định nếu cần */}
+                <Image
+                  src={authorAvatar}
+                  alt={post.author.name || 'Author'}
+                  width={100}
+                  height={100}
+                  className="object-cover rounded-full"
+                />
                 <div>
                   <h3 className="text-xl font-bold mb-2 text-neutral-600 dark:text-neutral-50">{post.author.name}</h3>
                   <p className="text-neutral-600 dark:text-neutral-400 mb-4">
@@ -401,39 +472,42 @@ export default function BlogPost() {
               <h2 className="text-2xl font-bold mb-10">You might also like</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {relatedPosts.map((relatedPost, index) => (
-                  <motion.article
-                    key={relatedPost._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="border-t border-neutral-200 dark:border-neutral-800 pt-6"
-                  >
-                    {relatedPost.image && (
+                {relatedPosts.map((relatedPost, index) => {
+                  // Đảm bảo hình ảnh của bài viết liên quan không rỗng
+                  const relatedImage = relatedPost.image && relatedPost.image !== '' ? relatedPost.image : DEFAULT_POST_IMAGE;
+                  
+                  return (
+                    <motion.article
+                      key={relatedPost._id || index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className="border-t border-neutral-200 dark:border-neutral-800 pt-6"
+                    >
                       <div className="img-zoom h-48 relative overflow-hidden mb-4">
                         <Image
-                          src={relatedPost.image}
-                          alt={relatedPost.title}
+                          src={relatedImage}
+                          alt={relatedPost.title || 'Related post'}
                           fill
                           sizes="(max-width: 768px) 100vw, 33vw"
                           className="object-cover"
                         />
                       </div>
-                    )}
-                    <span className="badge badge-primary mb-2 inline-block">
-                      {relatedPost.category}
-                    </span>
-                    <TransitionLink href={`/blog/${relatedPost.slug.current || relatedPost.slug}`}>
-                      <h3 className="text-lg font-bold mb-2 hover:text-primary transition-colors">
-                        {relatedPost.title}
-                      </h3>
-                    </TransitionLink>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-sm">
-                      {formatDate(relatedPost.date)}
-                    </p>
-                  </motion.article>
-                ))}
+                      <span className="badge badge-primary mb-2 inline-block">
+                        {relatedPost.category || 'Uncategorized'}
+                      </span>
+                      <TransitionLink href={`/blog/${relatedPost.slug}`}>
+                        <h3 className="text-lg font-bold mb-2 hover:text-primary transition-colors">
+                          {relatedPost.title || 'Untitled Post'}
+                        </h3>
+                      </TransitionLink>
+                      <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                        {formatDate(relatedPost.date) || 'No date'}
+                      </p>
+                    </motion.article>
+                  );
+                })}
               </div>
             </div>
           </div>
