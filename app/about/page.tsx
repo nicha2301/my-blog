@@ -12,11 +12,9 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// 默认图片
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1542744095-291d1f67b221?q=80&w=1964&auto=format&fit=crop";
 const DEFAULT_JOIN_IMAGE = "https://images.unsplash.com/photo-1522542550221-31fd19575a2d?q=80&w=1770&auto=format&fit=crop";
 
-// 默认值
 const defaultValues = [
   {
     title: "Thoughtful Design",
@@ -32,7 +30,6 @@ const defaultValues = [
   },
 ];
 
-// 默认团队成员
 const defaultTeam = [
   {
     name: "Alex Morgan",

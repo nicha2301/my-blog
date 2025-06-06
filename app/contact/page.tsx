@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, Suspense } from "react";
+import TransitionLink from "@/app/components/transition-link";
 
 function ContactContent() {
   const [formState, setFormState] = useState({
@@ -20,18 +21,40 @@ function ContactContent() {
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
 
-    // Simulated form submission
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      Object.entries(formState).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      
+      formData.append("_to", "nqt230103a@gmail.com");
+      
+      const response = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      
+      if (response.ok) {
+        setIsSubmitted(true);
+        setFormState({ name: "", email: "", subject: "", message: "" });
+      } else {
+        const responseData = await response.json();
+        throw new Error(responseData.message || "表单提交失败，请稍后再试");
+      }
+    } catch (err) {
+      console.error("表单提交错误:", err);
+      setError(err instanceof Error ? err.message : "提交过程中发生错误，请稍后再试");
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-      // Reset form after submission (in a real application)
-      // setFormState({ name: "", email: "", subject: "", message: "" });
-    }, 1500);
+    }
   };
 
   return (
@@ -84,6 +107,11 @@ function ContactContent() {
                 {isSubmitted ? (
                   <div className="border border-neutral-200 dark:border-neutral-800 p-8">
                     <div className="text-center">
+                      <div className="flex justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-primary">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
                       <h3 className="text-xl font-bold mb-4">Thank You!</h3>
                       <p className="text-neutral-600 dark:text-neutral-400 mb-8">
                         Your message has been sent successfully. We will get back to you as soon as possible.
@@ -117,7 +145,7 @@ function ContactContent() {
                           onChange={handleChange}
                           required
                           className="input w-full"
-                          placeholder="John Doe"
+                          placeholder="Nguyễn Quốc Trung"
                         />
                       </div>
                       <div>
@@ -132,7 +160,7 @@ function ContactContent() {
                           onChange={handleChange}
                           required
                           className="input w-full"
-                          placeholder="john@example.com"
+                          placeholder="nqt230103a@gmail.com"
                         />
                       </div>
                     </div>
@@ -214,9 +242,9 @@ function ContactContent() {
                   <div>
                     <h3 className="text-lg font-bold mb-1">Email</h3>
                     <p className="text-neutral-600 dark:text-neutral-400 mb-2">
-                      The fastest way to reach our team.
+                      The fastest way to reach us.
                     </p>
-                    <a href="mailto:hello@minimaljournal.com" className="link">hello@minimaljournal.com</a>
+                    <a href="mailto:nqt230103a@gmail.com" className="link">nqt230103a@gmail.com</a>
                   </div>
                 </div>
                 
@@ -233,9 +261,24 @@ function ContactContent() {
                       Visit us for coffee and conversation.
                     </p>
                     <address className="not-italic text-neutral-600 dark:text-neutral-400">
-                      123 Design Avenue<br />
-                      San Francisco, CA 94103
+                      Nguyễn Quốc Trung<br />
+                      Thủ Đức, Hồ Chí Minh
                     </address>
+                  </div>
+                </div>
+                
+                <div className="flex gap-6 items-start">
+                  <div className="w-12 h-12 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-1">Phone</h3>
+                    <p className="text-neutral-600 dark:text-neutral-400 mb-2">
+                      Direct line to our customer support.
+                    </p>
+                    <a href="tel:0823150025" className="link">0823150025</a>
                   </div>
                 </div>
                 
@@ -248,24 +291,10 @@ function ContactContent() {
                   <div>
                     <h3 className="text-lg font-bold mb-1">Office Hours</h3>
                     <p className="text-neutral-600 dark:text-neutral-400">
-                      Monday – Friday: 9AM – 6PM<br />
-                      Saturday – Sunday: Closed
+                      Monday-Friday: 9am to 5pm<br />
+                      Saturday: 10am to 2pm<br />
+                      Sunday: Closed
                     </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-6 items-start">
-                  <div className="w-12 h-12 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold mb-1">Phone</h3>
-                    <p className="text-neutral-600 dark:text-neutral-400 mb-2">
-                      Call us during business hours.
-                    </p>
-                    <a href="tel:+15555555555" className="link">+1 (555) 555-5555</a>
                   </div>
                 </div>
               </div>
@@ -277,12 +306,18 @@ function ContactContent() {
       {/* Map Section */}
       <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
         <div className="container">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="section-heading text-2xl font-bold mb-8 text-center">Our Location</h2>
-            <div className="aspect-video border border-neutral-200 dark:border-neutral-800 w-full">
-              <div className="w-full h-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center">
-                <p className="text-neutral-600 dark:text-neutral-400">Interactive map placeholder</p>
-              </div>
+          <div className="max-w-4xl mx-auto">
+            <h2 className="section-heading text-2xl font-bold mb-8 text-center">Find Us</h2>
+            <div className="border border-neutral-200 dark:border-neutral-800 p-1 h-[400px]">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d177365.45146577794!2d106.69086761121176!3d10.791403414711983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d85e042bf04b%3A0xbb26baec1664394d!2zVGjhu6cgxJDhu6ljLCBI4buTIENow60gTWluaCwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1749213388831!5m2!1svi!2s"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
         </div>
@@ -293,7 +328,14 @@ function ContactContent() {
 
 export default function Contact() {
   return (
-    <Suspense fallback={<div>Loading contact page...</div>}>
+    <Suspense fallback={
+      <div className="py-24 flex justify-center">
+        <div className="relative">
+          <div className="h-16 w-16 rounded-full border-t-2 border-b-2 border-primary animate-spin"></div>
+          <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-r-2 border-l-2 border-neutral-300 dark:border-neutral-700 animate-pulse"></div>
+        </div>
+      </div>
+    }>
       <ContactContent />
     </Suspense>
   );

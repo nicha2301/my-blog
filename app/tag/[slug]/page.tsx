@@ -2,34 +2,120 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getPostsByTag } from "@/app/lib/sanity/api";
+import { getPostsByTag, getAllPosts } from "@/app/lib/sanity/api";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { notFound } from "next/navigation";
 import TransitionLink from "@/app/components/transition-link";
 import type { Post } from "@/app/lib/data";
+import { formatDate } from "@/app/lib/utils";
+import { urlFor } from "@/app/lib/sanity/client";
+
+// Hình mặc định
+const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
 
 export default function TagPage() {
   const { slug } = useParams();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [popularTags, setPopularTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const tagName = slug ? decodeURIComponent(slug as string) : "";
+
+  // Hàm helper để xử lý URL hình ảnh
+  const getImageUrl = (imageSource: any): string => {
+    if (!imageSource) return DEFAULT_POST_IMAGE;
+    
+    // Nếu là URL đầy đủ, trả về nguyên vẹn
+    if (typeof imageSource === 'string' && imageSource.startsWith('http')) {
+      return imageSource;
+    }
+    
+    // Nếu là đối tượng tham chiếu Sanity, sử dụng urlFor
+    try {
+      return urlFor(imageSource).url();
+    } catch (error) {
+      console.error('Error generating image URL:', error);
+      return DEFAULT_POST_IMAGE;
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
       if (slug) {
         try {
           setLoading(true);
+          
+          // Lấy bài viết theo tag
           const tagPosts = await getPostsByTag(tagName);
-          setPosts(tagPosts);
+          
+          // Xử lý bài viết để đảm bảo các trường dữ liệu
+          const processedPosts = tagPosts.map(post => {
+            // Xử lý hình ảnh
+            let imageUrl = DEFAULT_POST_IMAGE;
+            if (post.mainImage) {
+              imageUrl = getImageUrl(post.mainImage);
+            } else if (post.image) {
+              imageUrl = getImageUrl(post.image);
+            }
+            
+            // Xử lý avatar
+            let authorAvatar = DEFAULT_AVATAR;
+            if (post.author && post.author.image) {
+              authorAvatar = getImageUrl(post.author.image);
+            } else if (post.author && post.author.avatar) {
+              authorAvatar = getImageUrl(post.author.avatar);
+            }
+            
+            return {
+              id: post._id || post.id || '',
+              title: post.title || 'Untitled',
+              slug: typeof post.slug === 'string' ? post.slug : (post.slug?.current || ''),
+              excerpt: post.excerpt || 'No excerpt available',
+              content: post.content || '',
+              date: post.date || new Date().toISOString(),
+              readTime: post.readTime || '3 min read',
+              image: imageUrl,
+              category: post.category || 'Uncategorized',
+              categorySlug: post.categorySlug || 'uncategorized',
+              author: {
+                id: post.author?.id || '',
+                name: post.author?.name || 'Unknown Author',
+                avatar: authorAvatar
+              },
+              tags: post.tags || []
+            };
+          });
+          
+          setPosts(processedPosts);
+          
+          // Lấy các tags phổ biến từ tất cả bài viết
+          const allPosts = await getAllPosts();
+          const allTags: string[] = [];
+          allPosts.forEach(post => {
+            if (post.tags && Array.isArray(post.tags)) {
+              post.tags.forEach(tag => {
+                if (tag && !allTags.includes(tag)) {
+                  allTags.push(tag);
+                }
+              });
+            }
+          });
+          
+          // Lọc bỏ tag hiện tại và giới hạn số lượng
+          const filteredTags = allTags
+            .filter(tag => tag.toLowerCase() !== tagName.toLowerCase())
+            .slice(0, 10);
+            
+          setPopularTags(filteredTags);
+          
         } catch (error) {
           console.error("Error fetching posts by tag:", error);
           setPosts([]);
         } finally {
-          // Simulate loading
           setTimeout(() => {
             setLoading(false);
-          }, 500);
+          }, 300);
         }
       }
     }
@@ -92,7 +178,7 @@ export default function TagPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {posts.map((post, index) => (
                 <motion.article
-                  key={post.id}
+                  key={post.id || index}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -113,7 +199,7 @@ export default function TagPage() {
                       <TransitionLink href={`/category/${post.categorySlug}`} className="badge badge-primary">
                         {post.category}
                       </TransitionLink>
-                      <span className="text-sm text-neutral-500">{post.date}</span>
+                      <span className="text-sm text-neutral-500">{formatDate(post.date)}</span>
                     </div>
                     <TransitionLink href={`/blog/${post.slug}`}>
                       <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors">{post.title}</h3>
@@ -164,17 +250,29 @@ export default function TagPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <h2 className="text-2xl font-bold mb-8 text-center">Other Popular Tags</h2>
           <div className="flex flex-wrap justify-center gap-3">
-            {["design", "user experience", "typography", "development", "accessibility", "react", "javascript", "color theory"].map((tag) => (
-              tag !== tagName && (
+            {popularTags.length > 0 ? (
+              popularTags.map((tag) => (
                 <TransitionLink 
                   key={tag} 
                   href={`/tag/${tag}`}
-                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="px-4 py-2 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-full"
                 >
                   #{tag}
                 </TransitionLink>
-              )
-            ))}
+              ))
+            ) : (
+              ["design", "user experience", "typography", "development", "accessibility"].map((tag) => (
+                tag.toLowerCase() !== tagName.toLowerCase() && (
+                  <TransitionLink 
+                    key={tag} 
+                    href={`/tag/${tag}`}
+                    className="px-4 py-2 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-full"
+                  >
+                    #{tag}
+                  </TransitionLink>
+                )
+              ))
+            )}
           </div>
         </div>
       </section>

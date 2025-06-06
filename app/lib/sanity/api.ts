@@ -6,7 +6,8 @@ import {
   allAuthorsQuery,
   relatedPostsQuery,
   postsByCategoryQuery,
-  postsByAuthorQuery
+  postsByAuthorQuery,
+  aboutPageQuery
 } from './queries';
 
 // Types có thể sử dụng lại từ data.ts hoặc định nghĩa mới
@@ -60,4 +61,9 @@ export async function getPostsByAuthor(authorId: string): Promise<Post[]> {
 // Get posts by tag
 export async function getPostsByTag(tag: string): Promise<Post[]> {
   return await client.fetch(`*[_type == "post" && $tag in tags[]->title]`, { tag });
+}
+
+// 获取"关于我们"页面内容
+export async function getAboutPageContent() {
+  return await client.fetch(aboutPageQuery);
 } 

@@ -112,4 +112,23 @@ export const postsByAuthorQuery = `
     "image": mainImage.asset->url,
     "category": categories[0]->title
   }
+`;
+
+export const aboutPageQuery = `
+  *[_type == "aboutPage"][0] {
+    title,
+    description,
+    mission,
+    values[] {
+      title,
+      description
+    },
+    team[] {
+      name,
+      role,
+      bio,
+      "image": photo.asset->url
+    },
+    "joinImage": joinImage.asset->url
+  }
 `; 
