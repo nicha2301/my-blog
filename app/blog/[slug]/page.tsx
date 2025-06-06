@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
-import { getPostBySlug, getRelatedPosts } from "@/app/lib/sanity/api";
-import Image from "next/image";
-import TransitionLink from "@/app/components/transition-link";
 import { motion } from "framer-motion";
-import { notFound } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useParams, notFound } from "next/navigation";
+import Image from "next/image";
 import { formatDate } from "@/app/lib/utils";
 import { urlFor } from "@/app/lib/sanity/client";
+import TransitionLink from "@/app/components/transition-link";
+import { PostComments } from "@/app/components/post-comments";
+import { PostShare } from "@/app/components/post-share";
+import { PostQuoteShare } from "@/app/components/post-quote-share";
+import { getPostBySlug } from "@/app/lib/sanity/api";
 
 // Hình ảnh mặc định
 const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
@@ -72,22 +74,50 @@ function simpleMarkdownToHtml(markdown: string): string {
   return html;
 }
 
+// Chỉnh sửa type để phù hợp với cả API Sanity và dữ liệu tĩnh
+interface ExtendedPost {
+  id?: string;
+  _id?: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content: string;
+  date: string;
+  readTime?: string;
+  image?: string;
+  mainImage?: Record<string, any>;
+  category: string;
+  categorySlug: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    image?: Record<string, any>;
+  };
+  tags: string[];
+}
+
+// Cập nhật lại kiểu dữ liệu của hàm getRelatedPosts
+declare function getRelatedPosts(postId: string, categoryId: string, limit?: number): Promise<ExtendedPost[]>;
+
 export default function BlogPost() {
   const params = useParams();
-  const slug = params?.slug as string; // Sử dụng optional chaining và type assertion
-  const [post, setPost] = useState<any>(null);
-  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
+  const slug = params?.slug as string;
+  const [post, setPost] = useState<ExtendedPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<ExtendedPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [headings, setHeadings] = useState<any[]>([]);
+  const [headings, setHeadings] = useState<{id: string, title: string, level: number}[]>([]);
   const [activeId, setActiveId] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const mobileDetailsRef = useRef<HTMLDetailsElement>(null);
   
   // Force observer setup after content fully renders
   const [contentRendered, setContentRendered] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [pageUrl, setPageUrl] = useState<string>("");
   
   // Hàm helper để xử lý URL hình ảnh
-  const getImageUrl = (imageSource: any): string => {
+  const getImageUrl = (imageSource: string | Record<string, any>): string => {
     if (!imageSource) return DEFAULT_POST_IMAGE;
     
     // Nếu là URL đầy đủ, trả về nguyên vẹn
@@ -113,35 +143,12 @@ export default function BlogPost() {
             notFound();
           }
           
-          // Xử lý ảnh bài viết
-          if (currentPost.mainImage) {
-            currentPost.image = getImageUrl(currentPost.mainImage);
-          } else if (!currentPost.image) {
-            currentPost.image = DEFAULT_POST_IMAGE;
-          }
-          
-          // Đảm bảo thông tin tác giả và avatar tồn tại
-          if (!currentPost.author) {
-            currentPost.author = {
-              id: 'unknown',
-              name: 'Unknown Author',
-              avatar: DEFAULT_AVATAR
-            };
-          } else {
-            // Xử lý avatar tác giả
-            if (currentPost.author.image) {
-              currentPost.author.avatar = getImageUrl(currentPost.author.image);
-            } else if (!currentPost.author.avatar || currentPost.author.avatar === '') {
-              currentPost.author.avatar = DEFAULT_AVATAR;
-            }
-          }
-          
           setPost(currentPost);
           
           // Get related posts if category exists
-          if (currentPost._id && currentPost.categorySlug) {
+          if (currentPost.id && currentPost.categorySlug) {
             try {
-              const related = await getRelatedPosts(currentPost._id, currentPost.categorySlug, 3);
+              const related = await getRelatedPosts(currentPost.id, currentPost.categorySlug, 3);
               
               // Đảm bảo mỗi bài viết liên quan đều có hình ảnh và slug hợp lệ
               const relatedWithDefaults = related.map((relatedPost: any) => ({
@@ -219,6 +226,11 @@ export default function BlogPost() {
       };
     }
   }, [contentRendered]);
+  
+  useEffect(() => {
+    setIsMounted(true);
+    setPageUrl(window.location.href);
+  }, []);
   
   if (loading) {
     return (
@@ -366,6 +378,13 @@ export default function BlogPost() {
                       </ul>
                     </nav>
                   </div>
+                  
+                  {/* Social Share Component - Desktop */}
+                  {isMounted && (
+                    <div className="mt-10">
+                      <PostShare title={post.title || ""} url={pageUrl} />
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -405,6 +424,9 @@ export default function BlogPost() {
                 </div>
               )}
               
+              {/* Quote Share component */}
+              {isMounted && <PostQuoteShare selector=".markdown-content" />}
+              
               {/* Article content */}
               <div
                 ref={contentRef} 
@@ -413,6 +435,15 @@ export default function BlogPost() {
               >
                 {/* Content is inserted via dangerouslySetInnerHTML */}
               </div>
+              
+              {/* Mobile Social Share */}
+              {isMounted && (
+                <div className="mt-8 mb-10 block lg:hidden">
+                  <div className="flex justify-center">
+                    <PostShare title={post.title || ""} url={pageUrl} />
+                  </div>
+                </div>
+              )}
               
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
@@ -428,6 +459,9 @@ export default function BlogPost() {
                   ))}
                 </div>
               )}
+              
+              {/* Comments Section */}
+              {isMounted && <PostComments slug={post.slug} />}
             </motion.div>
           </div>
         </div>
