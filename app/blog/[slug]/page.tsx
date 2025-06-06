@@ -8,9 +8,7 @@ import { formatDate } from "@/app/lib/utils";
 import { urlFor } from "@/app/lib/sanity/client";
 import TransitionLink from "@/app/components/transition-link";
 import { PostComments } from "@/app/components/post-comments";
-import { PostShare } from "@/app/components/post-share";
-import { PostQuoteShare } from "@/app/components/post-quote-share";
-import { getPostBySlug } from "@/app/lib/sanity/api";
+import { getPostBySlug, getRelatedPosts } from "@/app/lib/sanity/api";
 
 // Hình ảnh mặc định
 const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
@@ -97,8 +95,16 @@ interface ExtendedPost {
   tags: string[];
 }
 
-// Cập nhật lại kiểu dữ liệu của hàm getRelatedPosts
-declare function getRelatedPosts(postId: string, categoryId: string, limit?: number): Promise<ExtendedPost[]>;
+// Các hàm helper để xử lý dữ liệu từ Sanity
+const getSlugString = (slugField: string | { _type?: string; current?: string }) => {
+  if (typeof slugField === 'string') return slugField;
+  return slugField?.current || '';
+};
+
+const getIdString = (idField: string | { _id?: string; id?: string }) => {
+  if (typeof idField === 'string') return idField;
+  return idField?._id || idField?.id || '';
+};
 
 export default function BlogPost() {
   const params = useParams();
@@ -114,7 +120,6 @@ export default function BlogPost() {
   // Force observer setup after content fully renders
   const [contentRendered, setContentRendered] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [pageUrl, setPageUrl] = useState<string>("");
   
   // Hàm helper để xử lý URL hình ảnh
   const getImageUrl = (imageSource: string | Record<string, any>): string => {
@@ -146,17 +151,18 @@ export default function BlogPost() {
           setPost(currentPost);
           
           // Get related posts if category exists
-          if (currentPost.id && currentPost.categorySlug) {
+          if (currentPost.id || currentPost._id) {
             try {
-              const related = await getRelatedPosts(currentPost.id, currentPost.categorySlug, 3);
+              const postId = getIdString(currentPost.id || currentPost._id || '');
+              const categoryId = currentPost.categorySlug;
+              const related = await getRelatedPosts(postId, categoryId);
               
               // Đảm bảo mỗi bài viết liên quan đều có hình ảnh và slug hợp lệ
               const relatedWithDefaults = related.map((relatedPost: any) => ({
                 ...relatedPost,
                 image: relatedPost.mainImage ? getImageUrl(relatedPost.mainImage) : 
                        (relatedPost.image ? getImageUrl(relatedPost.image) : DEFAULT_POST_IMAGE),
-                slug: typeof relatedPost.slug === 'string' ? relatedPost.slug : 
-                      (relatedPost.slug && relatedPost.slug.current ? relatedPost.slug.current : '')
+                slug: getSlugString(relatedPost.slug)
               }));
               
               setRelatedPosts(relatedWithDefaults);
@@ -229,7 +235,6 @@ export default function BlogPost() {
   
   useEffect(() => {
     setIsMounted(true);
-    setPageUrl(window.location.href);
   }, []);
   
   if (loading) {
@@ -267,7 +272,7 @@ export default function BlogPost() {
               className="mb-8"
             >
               {post.categorySlug && (
-                <TransitionLink href={`/category/${post.categorySlug}`} className="badge badge-primary mb-6 inline-block">
+                <TransitionLink href={`/category/${typeof post.categorySlug === 'string' ? post.categorySlug : post.categorySlug?.current || ''}`} className="badge badge-primary mb-6 inline-block">
                   {post.category}
                 </TransitionLink>
               )}
@@ -284,7 +289,7 @@ export default function BlogPost() {
                     className="object-cover rounded-full"
                   />
                   {post.author?.id && (
-                    <TransitionLink href={`/author/${post.author.id}`} className="text-sm hover:text-primary transition-colors">
+                    <TransitionLink href={`/author/${typeof post.author.id === 'string' ? post.author.id : post.author.id?.current || ''}`} className="text-sm hover:text-primary transition-colors">
                       {post.author.name || 'Author'}
                     </TransitionLink>
                   )}
@@ -378,13 +383,6 @@ export default function BlogPost() {
                       </ul>
                     </nav>
                   </div>
-                  
-                  {/* Social Share Component - Desktop */}
-                  {isMounted && (
-                    <div className="mt-10">
-                      <PostShare title={post.title || ""} url={pageUrl} />
-                    </div>
-                  )}
                 </div>
               )}
               
@@ -424,9 +422,6 @@ export default function BlogPost() {
                 </div>
               )}
               
-              {/* Quote Share component */}
-              {isMounted && <PostQuoteShare selector=".markdown-content" />}
-              
               {/* Article content */}
               <div
                 ref={contentRef} 
@@ -436,32 +431,26 @@ export default function BlogPost() {
                 {/* Content is inserted via dangerouslySetInnerHTML */}
               </div>
               
-              {/* Mobile Social Share */}
-              {isMounted && (
-                <div className="mt-8 mb-10 block lg:hidden">
-                  <div className="flex justify-center">
-                    <PostShare title={post.title || ""} url={pageUrl} />
-                  </div>
-                </div>
-              )}
-              
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-12 mb-16">
-                  {post.tags.map((tag: string, index: number) => (
-                    <TransitionLink 
-                      key={index}
-                      href={`/tag/${tag}`}
-                      className="text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-full"
-                    >
-                      #{tag}
-                    </TransitionLink>
-                  ))}
+                  {post.tags.map((tag: string | any, index: number) => {
+                    const tagText = typeof tag === 'string' ? tag : (tag?.name || tag?.title || '');
+                    return (
+                      <TransitionLink 
+                        key={index}
+                        href={`/tag/${encodeURIComponent(tagText)}`}
+                        className="text-sm px-4 py-2 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-full"
+                      >
+                        #{tagText}
+                      </TransitionLink>
+                    );
+                  })}
                 </div>
               )}
               
               {/* Comments Section */}
-              {isMounted && <PostComments slug={post.slug} />}
+              {isMounted && <PostComments slug={getSlugString(post.slug)} />}
             </motion.div>
           </div>
         </div>
@@ -487,7 +476,7 @@ export default function BlogPost() {
                     Author of insightful articles on design and technology.
                   </p>
                   {post.author.id && (
-                    <TransitionLink href={`/author/${post.author.id}`} className="link">
+                    <TransitionLink href={`/author/${typeof post.author.id === 'string' ? post.author.id : post.author.id?.current || ''}`} className="link">
                       View all posts
                     </TransitionLink>
                   )}
@@ -531,7 +520,7 @@ export default function BlogPost() {
                       <span className="badge badge-primary mb-2 inline-block">
                         {relatedPost.category || 'Uncategorized'}
                       </span>
-                      <TransitionLink href={`/blog/${relatedPost.slug}`}>
+                      <TransitionLink href={`/blog/${getSlugString(relatedPost.slug)}`}>
                         <h3 className="text-lg font-bold mb-2 hover:text-primary transition-colors">
                           {relatedPost.title || 'Untitled Post'}
                         </h3>
