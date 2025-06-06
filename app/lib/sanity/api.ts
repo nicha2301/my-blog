@@ -44,7 +44,7 @@ export async function getAuthorById(id: string): Promise<Author | null> {
 }
 
 // Get related posts
-export async function getRelatedPosts(postId: string, categoryId: string, limit: number = 3): Promise<Post[]> {
+export async function getRelatedPosts(postId: string, categoryId: string): Promise<Post[]> {
   return await client.fetch(relatedPostsQuery, { postId, categoryId });
 }
 
@@ -60,7 +60,8 @@ export async function getPostsByAuthor(authorId: string): Promise<Post[]> {
 
 // Get posts by tag
 export async function getPostsByTag(tag: string): Promise<Post[]> {
-  return await client.fetch(`*[_type == "post" && $tag in tags[]->title]`, { tag });
+  // @ts-expect-error: Temporarily ignore type issues with Sanity client
+  return await client.fetch('*[_type == "post" && $tag in tags[]->title]', { tag });
 }
 
 // 获取"关于我们"页面内容
