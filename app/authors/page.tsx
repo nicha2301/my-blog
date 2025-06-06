@@ -103,7 +103,7 @@ export default function Authors() {
           <div className="text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">Join Our Team</h2>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto mb-8">
-              Are you passionate about design, typography, development, or related fields? We're always looking for talented writers to join our team.
+              Are you passionate about design, typography, development, or related fields? We&apos;re always looking for talented writers to join our team.
             </p>
             <TransitionLink href="/contact" className="btn btn-primary">
               Get in Touch
