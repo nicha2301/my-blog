@@ -12,6 +12,7 @@ import PageTransition from "./components/page-transition";
 import NavigationProgress from "./components/navigation-progress";
 import AppWrapper from "./components/app-wrapper";
 import Script from 'next/script';
+import GoogleAnalytics from './components/GoogleAnalytics';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -78,6 +79,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <GoogleAnalytics />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { startPageLoading, stopPageLoading } from "../store/loading-store";
+import { trackEvent, trackPageView } from "../lib/analytics";
 
 interface TransitionLinkProps {
   href: string;
@@ -45,6 +46,10 @@ export default function TransitionLink({
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Enable default behavior for external links
     if (href.startsWith("http") || href.startsWith("mailto:")) {
+      // Track outbound link clicks
+      trackEvent('outbound_link_click', { 
+        destination: href 
+      });
       return;
     }
     
@@ -68,6 +73,9 @@ export default function TransitionLink({
     
     // Start loading animation
     startPageLoading();
+
+    // Track internal navigation
+    trackPageView(href);
 
     // Add a small delay for any exit animations if needed
     setTimeout(() => {

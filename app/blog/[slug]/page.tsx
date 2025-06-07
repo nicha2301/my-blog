@@ -9,6 +9,7 @@ import { urlFor } from "@/app/lib/sanity/client";
 import TransitionLink from "@/app/components/transition-link";
 import { PostComments } from "@/app/components/post-comments";
 import { getPostBySlug, getRelatedPosts } from "@/app/lib/sanity/api";
+import { trackEvent } from "@/app/lib/analytics";
 
 // Hình ảnh mặc định
 const DEFAULT_POST_IMAGE = "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80";
@@ -150,6 +151,14 @@ export default function BlogPost() {
           
           setPost(currentPost);
           
+          // Track page view with post data
+          trackEvent('post_view', {
+            post_id: getIdString(currentPost.id || currentPost._id || ''),
+            post_title: currentPost.title,
+            post_category: currentPost.category,
+            post_author: currentPost.author.name
+          });
+          
           // Get related posts if category exists
           if (currentPost.id || currentPost._id) {
             try {
@@ -236,6 +245,50 @@ export default function BlogPost() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+  
+  // Track scroll depth
+  useEffect(() => {
+    if (!loading && contentRef.current) {
+      let scrollDepthTracked = {
+        25: false,
+        50: false,
+        75: false,
+        100: false
+      };
+      
+      const trackScrollDepth = () => {
+        if (!contentRef.current) return;
+        
+        const contentElement = contentRef.current;
+        const contentHeight = contentElement.scrollHeight;
+        const scrollPosition = window.scrollY + window.innerHeight;
+        const elementTop = contentElement.offsetTop;
+        const scrollDepth = Math.min(100, Math.round((scrollPosition - elementTop) / contentHeight * 100));
+        
+        // Track when user scrolls to each quarter of the content
+        if (scrollDepth >= 25 && !scrollDepthTracked[25]) {
+          trackEvent('scroll_depth', { depth: 25, post_title: post?.title });
+          scrollDepthTracked[25] = true;
+        }
+        if (scrollDepth >= 50 && !scrollDepthTracked[50]) {
+          trackEvent('scroll_depth', { depth: 50, post_title: post?.title });
+          scrollDepthTracked[50] = true;
+        }
+        if (scrollDepth >= 75 && !scrollDepthTracked[75]) {
+          trackEvent('scroll_depth', { depth: 75, post_title: post?.title });
+          scrollDepthTracked[75] = true;
+        }
+        if (scrollDepth >= 95 && !scrollDepthTracked[100]) {
+          trackEvent('scroll_depth', { depth: 100, post_title: post?.title });
+          trackEvent('post_completed', { post_title: post?.title });
+          scrollDepthTracked[100] = true;
+        }
+      };
+      
+      window.addEventListener('scroll', trackScrollDepth);
+      return () => window.removeEventListener('scroll', trackScrollDepth);
+    }
+  }, [loading, post]);
   
   if (loading) {
     return (

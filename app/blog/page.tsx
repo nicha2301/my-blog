@@ -11,6 +11,7 @@ import { Post } from "../lib/data";
 import TransitionLink from "../components/transition-link";
 import { urlFor } from "../lib/sanity/client";
 import { formatDate } from "../lib/utils";
+import { trackEvent, trackSearch } from "../lib/analytics";
 
 // Wrap the component that uses useSearchParams in Suspense
 function BlogFilterContent() {
@@ -70,12 +71,29 @@ function BlogFilterContent() {
   // Handle category change
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategory(categoryId);
+    
+    // Track category filter usage
+    trackEvent('category_filter', {
+      category_id: categoryId,
+      category_name: categories.find(cat => cat.id === categoryId)?.name || 'Unknown'
+    });
   };
 
   // Handle search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
+
+  // Track search when user stops typing
+  useEffect(() => {
+    if (searchQuery) {
+      const debounceTimer = setTimeout(() => {
+        trackSearch(searchQuery);
+      }, 1000); // Wait 1 second after typing stops
+      
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [searchQuery]);
 
   if (isLoading) {
     return (

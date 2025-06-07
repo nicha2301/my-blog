@@ -66,3 +66,26 @@ The project includes a GitHub Actions workflow for automatic deployment to GitHu
 ## License
 
 MIT
+
+## Tính năng Google Analytics
+
+Blog đã được tích hợp với Google Analytics 4 để theo dõi lượng truy cập và hành vi người dùng. Các tính năng analytics bao gồm:
+
+### Theo dõi cơ bản
+- Lượt xem trang
+- Thời gian trên trang
+- Nguồn truy cập
+- Thiết bị và trình duyệt
+
+### Theo dõi tùy chỉnh
+- Theo dõi chiều sâu cuộn trang (25%, 50%, 75%, 100%)
+- Theo dõi tìm kiếm trên trang
+- Theo dõi lọc theo danh mục
+- Theo dõi tương tác với bài viết
+- Theo dõi liên kết ngoài
+
+### Cấu hình
+Google Analytics được tích hợp thông qua component `GoogleAnalytics` trong `/app/components/GoogleAnalytics.tsx`.
+Mã đo lường: `G-2ELCSPG6HW`
+
+Để thay đổi ID analytics, hãy cập nhật biến `measurementId` trong file `app/components/GoogleAnalytics.tsx`.
