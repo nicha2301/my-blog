@@ -47,6 +47,7 @@ export default function Navbar() {
         { name: "Categories", href: "/categories" },
         { name: "Authors", href: "/authors" },
         { name: "Archive", href: "/archive" },
+        { name: "Analytics", href: "/analytics" },
       ]
     },
     { 
