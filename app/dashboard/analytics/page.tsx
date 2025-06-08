@@ -1,0 +1,36 @@
+'use client';
+
+import OverviewChart from '@/app/components/analytics/OverviewChart';
+import PopularPosts from '@/app/components/analytics/PopularPosts';
+import TrafficSources from '@/app/components/analytics/TrafficSources';
+
+export default function AnalyticsDashboard() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <h1 className="text-3xl font-bold">
+          Thống kê <span className="text-primary">Website</span>
+        </h1>
+        <div className="mt-4 md:mt-0 bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-sm">
+          Dữ liệu được cập nhật từ Google Analytics 4
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <OverviewChart />
+        </div>
+        <div className="lg:col-span-1">
+          <TrafficSources />
+        </div>
+        <div className="lg:col-span-3">
+          <PopularPosts />
+        </div>
+      </div>
+
+      <div className="mt-8 text-center text-sm text-white/60">
+        <p>Google Analytics Data API - Thời gian thực</p>
+      </div>
+    </div>
+  );
+} 

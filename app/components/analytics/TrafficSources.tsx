@@ -1,57 +1,88 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Doughnut } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  ChartData,
+  TooltipItem,
+  ChartOptions
 } from 'chart.js';
 
-// Đăng ký các component cần thiết
+// 注册所需组件
 ChartJS.register(
   ArcElement,
   Tooltip,
   Legend
 );
 
-interface TrafficSource {
-  source: string;
+interface SourceData {
+  name: string;
   sessions: number;
-  users: number;
+}
+
+interface SourcesResponse {
+  sources: SourceData[];
 }
 
 export default function TrafficSources() {
-  const [trafficData, setTrafficData] = useState<TrafficSource[]>([]);
+  const [sourcesData, setSourcesData] = useState<SourcesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTrafficData() {
+    async function fetchSourcesData() {
       try {
+        setLoading(true);
         const response = await fetch('/api/analytics/sources');
         if (!response.ok) {
           throw new Error('Không thể lấy dữ liệu nguồn truy cập');
         }
         const data = await response.json();
-        setTrafficData(data);
-      } catch (err: any) {
-        setError(err.message);
+        setSourcesData(data);
+        setError(null);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi');
       } finally {
         setLoading(false);
       }
     }
 
-    fetchTrafficData();
+    fetchSourcesData();
   }, []);
+
+  // 颜色生成函数
+  const generateColors = (count: number) => {
+    const baseColors = [
+      { bg: 'rgba(82, 39, 183, 0.7)', border: 'rgb(82, 39, 183)' },
+      { bg: 'rgba(219, 166, 166, 0.7)', border: 'rgb(219, 166, 166)' },
+      { bg: 'rgba(66, 133, 244, 0.7)', border: 'rgb(66, 133, 244)' },
+      { bg: 'rgba(219, 68, 55, 0.7)', border: 'rgb(219, 68, 55)' },
+      { bg: 'rgba(15, 157, 88, 0.7)', border: 'rgb(15, 157, 88)' },
+      { bg: 'rgba(244, 180, 0, 0.7)', border: 'rgb(244, 180, 0)' },
+    ];
+
+    const backgroundColors = [];
+    const borderColors = [];
+
+    for (let i = 0; i < count; i++) {
+      const colorIndex = i % baseColors.length;
+      backgroundColors.push(baseColors[colorIndex].bg);
+      borderColors.push(baseColors[colorIndex].border);
+    }
+
+    return { backgroundColors, borderColors };
+  };
 
   if (loading) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 animate-pulse">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
-          <p>Đang tải dữ liệu...</p>
+          <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
         </div>
       </div>
     );
@@ -62,108 +93,118 @@ export default function TrafficSources() {
       <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
-          <p>Lỗi: {error}</p>
+          <div className="text-center">
+            <p className="text-red-400 mb-2">Lỗi: {error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary/80 hover:bg-primary transition rounded-md text-sm font-medium"
+            >
+              Thử lại
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!trafficData || trafficData.length === 0) {
+  if (!sourcesData || !sourcesData.sources || sourcesData.sources.length === 0) {
     return (
       <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
-          <p>Không có dữ liệu nguồn truy cập</p>
+          <p className="text-white/60">Chưa có dữ liệu về nguồn truy cập</p>
         </div>
       </div>
     );
   }
 
-  // Màu sắc cho biểu đồ
-  const backgroundColors = [
-    'rgba(82, 39, 183, 0.8)',
-    'rgba(219, 166, 166, 0.8)',
-    'rgba(63, 100, 126, 0.8)',
-    'rgba(91, 143, 249, 0.8)',
-    'rgba(146, 126, 243, 0.8)',
-    'rgba(200, 153, 201, 0.8)',
-    'rgba(129, 180, 179, 0.8)',
-    'rgba(165, 120, 196, 0.8)',
-  ];
+  // 处理数据
+  const sourceNames = sourcesData.sources.map((source) => source.name);
+  const sessionCounts = sourcesData.sources.map((source) => source.sessions);
+  
+  // 获取颜色
+  const { backgroundColors, borderColors } = generateColors(sourceNames.length);
 
-  // Đổi tên nguồn truy cập cho dễ đọc
-  const getReadableName = (source: string) => {
-    if (source === '(direct)') return 'Trực tiếp';
-    if (source === 'google') return 'Google';
-    if (source === 'facebook') return 'Facebook';
-    if (source === 'instagram') return 'Instagram';
-    if (source === 't.co' || source === 'twitter.com' || source === 'twitter') return 'Twitter';
-    if (source === 'youtube' || source === 'youtube.com') return 'YouTube';
-    return source;
-  };
-
-  // Dữ liệu cho biểu đồ tròn
-  const chartData = {
-    labels: trafficData.map(item => getReadableName(item.source)),
+  // 图表数据
+  const data: ChartData<'pie'> = {
+    labels: sourceNames,
     datasets: [
       {
-        data: trafficData.map(item => item.sessions),
+        data: sessionCounts,
         backgroundColor: backgroundColors,
-        borderWidth: 0,
-      },
-    ],
+        borderColor: borderColors,
+        borderWidth: 1,
+        hoverOffset: 10
+      }
+    ]
   };
 
-  // Tùy chọn biểu đồ
-  const chartOptions = {
+  // 图表选项
+  const options: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: 'right',
         labels: {
           color: 'rgba(255, 255, 255, 0.8)',
           font: {
             family: 'Inter',
-            size: 11
+            size: 12
           },
-          boxWidth: 12,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          padding: 15,
+          boxWidth: 8,
         }
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         titleFont: {
-          family: 'Inter'
+          family: 'Inter',
+          size: 14
         },
         bodyFont: {
-          family: 'Inter'
+          family: 'Inter',
+          size: 13
         },
+        padding: 12,
+        cornerRadius: 6,
+        displayColors: true,
+        boxPadding: 6,
         callbacks: {
-          label: function(context: any) {
-            const value = context.raw;
-            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${value} phiên (${percentage}%)`;
+          label: function(tooltipItem: TooltipItem<'pie'>) {
+            const totalSessions = sessionCounts.reduce((a, b) => a + b, 0);
+            const value = tooltipItem.raw as number;
+            const percentage = Math.round((value / totalSessions) * 100);
+            return `${tooltipItem.label}: ${value} (${percentage}%)`;
           }
         }
       }
-    },
-    cutout: '60%'
+    }
   };
-
-  // Tính tổng số phiên
-  const totalSessions = trafficData.reduce((sum, source) => sum + source.sessions, 0);
 
   return (
     <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
-      <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
-      <div className="h-64 relative">
-        <Doughnut data={chartData} options={chartOptions} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div className="text-xl font-semibold">{totalSessions}</div>
-          <div className="text-xs opacity-70">Tổng phiên</div>
+      <h3 className="text-xl font-semibold mb-6">Nguồn truy cập</h3>
+      <div className="h-64">
+        <Pie data={data} options={options} />
+      </div>
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <h4 className="text-sm font-medium text-white/70 mb-2">Top 3 nguồn truy cập</h4>
+        <div className="space-y-2">
+          {sourcesData.sources.slice(0, 3).map((source, index) => (
+            <div key={index} className="flex justify-between items-center">
+              <div className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-full mr-2" 
+                  style={{backgroundColor: backgroundColors[index]}}
+                ></div>
+                <span className="text-sm">{source.name}</span>
+              </div>
+              <span className="text-sm font-medium">{source.sessions} phiên</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
