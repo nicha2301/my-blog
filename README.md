@@ -13,6 +13,31 @@ A sophisticated blog featuring clean design and thoughtful content, with luxury 
 - Sanity CMS integration for content management
 - Google Analytics 4 integration
 
+## Cấu trúc trang
+
+Dự án bao gồm các trang sau:
+
+| Trang | Đường dẫn | Mô tả |
+|-------|-----------|-------|
+| Trang chủ | `/` | Trang chính hiển thị các bài viết nổi bật, nội dung mới nhất |
+| Bài viết | `/blog/[slug]` | Trang hiển thị nội dung chi tiết một bài viết |
+| Danh sách bài viết | `/blog` | Trang liệt kê tất cả bài viết, hỗ trợ phân trang |
+| Danh mục | `/category/[slug]` | Hiển thị các bài viết theo danh mục cụ thể |
+| Tác giả | `/author/[slug]` | Trang thông tin tác giả và các bài viết của họ |
+| Thẻ | `/tag/[slug]` | Hiển thị các bài viết được gắn thẻ cụ thể |
+| Tìm kiếm | `/search` | Trang kết quả tìm kiếm nội dung |
+| Lưu trữ | `/archive` | Trang lưu trữ các bài viết theo thời gian |
+| Bảng điều khiển | `/dashboard` | Trang quản lý dành cho quản trị viên |
+| Phân tích | `/dashboard/analytics` | Hiển thị thống kê và phân tích người dùng |
+| Phân tích kiểm thử | `/dashboard/analytics/test` | Trang kiểm thử riêng cho các thành phần phân tích |
+| Quản trị CMS | `/studio` | Giao diện quản lý nội dung Sanity CMS |
+| Giới thiệu | `/about` | Thông tin về blog và đội ngũ |
+| Liên hệ | `/contact` | Biểu mẫu liên hệ và thông tin liên lạc |
+| Điều khoản dịch vụ | `/terms-of-service` | Trang điều khoản dịch vụ |
+| Chính sách riêng tư | `/privacy-policy` | Trang chính sách quyền riêng tư |
+
+Mỗi trang đều hỗ trợ đa ngôn ngữ thông qua cấu trúc đường dẫn `/[locale]/...` (ví dụ: `/en/blog`, `/vi/blog`).
+
 ## Getting Started
 
 ### Development
@@ -110,6 +135,19 @@ Google Analytics is integrated through the `GoogleAnalytics` component in `/app/
 Measurement ID: `G-2ELCSPG6HW`
 
 To change the analytics ID, update the `measurementId` variable in the `app/components/GoogleAnalytics.tsx` file.
+
+#### Thành phần phân tích
+
+Trang phân tích (`/dashboard/analytics`) hiển thị các dữ liệu thống kê từ Google Analytics qua các thành phần trực quan:
+
+- **OverviewChart**: Biểu đồ tổng quan về lượt truy cập và lượt xem trang
+- **TrafficSources**: Biểu đồ hiển thị nguồn truy cập trang web
+- **PopularPosts**: Danh sách các bài viết phổ biến nhất
+- **UsersByCountry**: Biểu đồ phân bổ người dùng theo quốc gia
+- **UserActivityChart**: Biểu đồ hoạt động người dùng theo thời gian trong ngày
+- **EventCountChart**: Biểu đồ thống kê các loại sự kiện được kích hoạt
+
+Mỗi thành phần đều kết nối với API backend để lấy dữ liệu thực từ Google Analytics Data API.
 
 ## Technical Notes
 
