@@ -11,6 +11,7 @@ import {
   TooltipItem,
   ChartOptions
 } from 'chart.js';
+import { useTheme } from 'next-themes';
 
 // 注册所需组件
 ChartJS.register(
@@ -29,9 +30,15 @@ interface SourcesResponse {
 }
 
 export default function TrafficSources() {
+  const { theme } = useTheme();
   const [sourcesData, setSourcesData] = useState<SourcesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchSourcesData() {
@@ -79,7 +86,7 @@ export default function TrafficSources() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 animate-pulse">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20 animate-pulse">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
@@ -90,7 +97,7 @@ export default function TrafficSources() {
 
   if (error) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="text-center">
@@ -109,14 +116,18 @@ export default function TrafficSources() {
 
   if (!sourcesData || !sourcesData.sources || sourcesData.sources.length === 0) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Nguồn truy cập</h3>
         <div className="h-64 flex items-center justify-center">
-          <p className="text-white/60">Chưa có dữ liệu về nguồn truy cập</p>
+          <p className="text-neutral-600 dark:text-neutral-400">Chưa có dữ liệu về nguồn truy cập</p>
         </div>
       </div>
     );
   }
+
+  const isDark = theme === 'dark';
+
+  if (!mounted) return null;
 
   // 处理数据
   const sourceNames = sourcesData.sources.map((source) => source.name);
@@ -147,7 +158,7 @@ export default function TrafficSources() {
       legend: {
         position: 'right',
         labels: {
-          color: 'rgba(255, 255, 255, 0.8)',
+          color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
           font: {
             family: 'Inter',
             size: 12
@@ -159,7 +170,9 @@ export default function TrafficSources() {
         }
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: isDark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)',
+        titleColor: isDark ? '#fff' : '#000',
+        bodyColor: isDark ? '#fff' : '#000',
         titleFont: {
           family: 'Inter',
           size: 14
@@ -185,13 +198,13 @@ export default function TrafficSources() {
   };
 
   return (
-    <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+    <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
       <h3 className="text-xl font-semibold mb-6">Nguồn truy cập</h3>
       <div className="h-64">
         <Pie data={data} options={options} />
       </div>
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <h4 className="text-sm font-medium text-white/70 mb-2">Top 3 nguồn truy cập</h4>
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-white/10">
+        <h4 className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2">Top 3 nguồn truy cập</h4>
         <div className="space-y-2">
           {sourcesData.sources.slice(0, 3).map((source, index) => (
             <div key={index} className="flex justify-between items-center">

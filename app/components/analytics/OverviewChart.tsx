@@ -13,6 +13,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import { useTheme } from 'next-themes';
 
 // Đăng ký các thành phần Chart.js
 ChartJS.register(
@@ -27,6 +28,7 @@ ChartJS.register(
 );
 
 export default function OverviewChart() {
+  const { theme } = useTheme();
   const [analyticsData, setAnalyticsData] = useState<{
     dates: string[];
     activeUsers: number[];
@@ -34,7 +36,11 @@ export default function OverviewChart() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [timeframe, setTimeframe] = useState<'7days' | '30days' | '90days'>('30days');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchAnalyticsData() {
@@ -47,20 +53,19 @@ export default function OverviewChart() {
         const data = await response.json();
         setAnalyticsData(data);
         setError(null);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi');
       } finally {
         setLoading(false);
       }
     }
 
     fetchAnalyticsData();
-  }, [timeframe]);
+  }, []);
 
   // Hàm chuyển đổi định dạng ngày
   const formatDate = (dateStr: string) => {
     if (!dateStr || dateStr.length !== 8) return dateStr;
-    const year = dateStr.substring(0, 4);
     const month = dateStr.substring(4, 6);
     const day = dateStr.substring(6, 8);
     return `${day}/${month}`;
@@ -68,10 +73,10 @@ export default function OverviewChart() {
 
   if (loading) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 animate-pulse">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20 animate-pulse">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold">Thống kê truy cập</h3>
-          <div className="bg-white/20 h-8 w-32 rounded"></div>
+          <div className="bg-gray-200 dark:bg-white/20 h-8 w-32 rounded"></div>
         </div>
         <div className="h-64 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-t-primary rounded-full animate-spin"></div>
@@ -82,7 +87,7 @@ export default function OverviewChart() {
 
   if (error) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Thống kê truy cập</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="text-center">
@@ -101,15 +106,17 @@ export default function OverviewChart() {
 
   if (!analyticsData || analyticsData.dates.length === 0) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Thống kê truy cập</h3>
         <div className="h-64 flex items-center justify-center">
-          <p className="text-white/60">Chưa có dữ liệu phân tích</p>
+          <p className="text-neutral-600 dark:text-neutral-400">Chưa có dữ liệu phân tích</p>
         </div>
       </div>
     );
   }
 
+  const isDark = theme === 'dark';
+  
   // Định dạng lại các ngày cho đẹp hơn
   const formattedDates = analyticsData.dates.map(formatDate);
 
@@ -157,7 +164,7 @@ export default function OverviewChart() {
       legend: {
         position: 'top' as const,
         labels: {
-          color: 'rgba(255, 255, 255, 0.8)',
+          color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
           font: {
             family: 'Inter',
             size: 12
@@ -167,7 +174,9 @@ export default function OverviewChart() {
         }
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: isDark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)',
+        titleColor: isDark ? '#fff' : '#000',
+        bodyColor: isDark ? '#fff' : '#000',
         titleFont: {
           family: 'Inter',
           size: 14
@@ -185,10 +194,10 @@ export default function OverviewChart() {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
+          color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.8)',
+          color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
           font: {
             family: 'Inter',
             size: 11
@@ -199,10 +208,10 @@ export default function OverviewChart() {
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
+          color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.8)',
+          color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
           font: {
             family: 'Inter',
             size: 11
@@ -213,15 +222,17 @@ export default function OverviewChart() {
     }
   };
 
+  if (!mounted) return null;
+
   return (
-    <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+    <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <h3 className="text-xl font-semibold mb-2 md:mb-0">Thống kê truy cập</h3>
         <div className="flex gap-2 items-center">
           {/* <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value as any)}
-            className="bg-white/10 border border-white/20 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="7days">7 ngày</option>
             <option value="30days">30 ngày</option>
@@ -231,12 +242,12 @@ export default function OverviewChart() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-4 rounded-md bg-white/5 text-center">
-          <p className="text-sm text-white/70">Tổng người dùng</p>
+        <div className="p-4 rounded-md bg-gray-100 dark:bg-white/5 text-center">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Tổng người dùng</p>
           <p className="text-2xl font-bold">{totalUsers}</p>
         </div>
-        <div className="p-4 rounded-md bg-white/5 text-center">
-          <p className="text-sm text-white/70">Tổng lượt xem</p>
+        <div className="p-4 rounded-md bg-gray-100 dark:bg-white/5 text-center">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Tổng lượt xem</p>
           <p className="text-2xl font-bold">{totalViews}</p>
         </div>
       </div>

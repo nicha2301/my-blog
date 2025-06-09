@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 interface PopularPost {
   title: string;
@@ -16,9 +17,15 @@ interface PopularPostsResponse {
 }
 
 export default function PopularPosts() {
+  const { theme } = useTheme();
   const [postsData, setPostsData] = useState<PopularPostsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchPopularPosts() {
@@ -64,17 +71,19 @@ export default function PopularPosts() {
     return title.substring(0, maxLength) + '...';
   };
 
+  if (!mounted) return null;
+
   if (loading) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 animate-pulse">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20 animate-pulse">
         <h3 className="text-xl font-semibold mb-4">Bài viết phổ biến</h3>
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded"></div>
+              <div className="w-12 h-12 bg-gray-200 dark:bg-white/20 rounded"></div>
               <div className="flex-1">
-                <div className="h-4 bg-white/20 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-white/20 rounded w-1/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-white/20 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-white/20 rounded w-1/4"></div>
               </div>
             </div>
           ))}
@@ -85,7 +94,7 @@ export default function PopularPosts() {
 
   if (error) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Bài viết phổ biến</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="text-center">
@@ -104,17 +113,17 @@ export default function PopularPosts() {
 
   if (!postsData || !postsData.popularPosts || postsData.popularPosts.length === 0) {
     return (
-      <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+      <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
         <h3 className="text-xl font-semibold mb-4">Bài viết phổ biến</h3>
         <div className="h-64 flex items-center justify-center">
-          <p className="text-white/60">Chưa có dữ liệu bài viết phổ biến</p>
+          <p className="text-neutral-600 dark:text-neutral-400">Chưa có dữ liệu bài viết phổ biến</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+    <div className="p-6 bg-white dark:bg-white/10 backdrop-blur-md rounded-lg border border-gray-200 dark:border-white/20">
       <h3 className="text-xl font-semibold mb-6">Bài viết phổ biến</h3>
       
       <div className="space-y-4">
@@ -122,10 +131,10 @@ export default function PopularPosts() {
           <Link 
             href={post.path} 
             key={index}
-            className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/10 transition group"
+            className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition group"
           >
-            <div className="flex-shrink-0 w-16 h-16 relative rounded-md overflow-hidden border border-white/20">
-              <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+            <div className="flex-shrink-0 w-16 h-16 relative rounded-md overflow-hidden border border-gray-200 dark:border-white/20">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-white/5">
                 <span className="text-xl font-bold opacity-30">#{index + 1}</span>
               </div>
               {/* 如果有真实图片可以替换下方的占位符 */}
@@ -141,7 +150,7 @@ export default function PopularPosts() {
               <h4 className="text-base font-medium mb-1 truncate">
                 {truncateTitle(post.title)}
               </h4>
-              <div className="flex text-xs text-white/60 gap-4">
+              <div className="flex text-xs text-neutral-600 dark:text-neutral-400 gap-4">
                 <div className="flex items-center">
                   <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -160,7 +169,7 @@ export default function PopularPosts() {
               </div>
             </div>
             
-            <svg className="w-5 h-5 text-white/30 group-hover:text-white/70 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
